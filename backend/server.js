@@ -3,85 +3,65 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const Device = require('./models/Device');
+const ping = require('net-ping');
+const mqtt = require('mqtt');
 
-// Load environment variables
 dotenv.config();
-
 const app = express();
-
-// Middleware
 app.use(bodyParser.json());
 app.use(cors());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.error(err));
 
-// Device Schema and Model
-const deviceSchema = new mongoose.Schema({
-  deviceId: { type: String, required: true },
-  name: { type: String, required: true },
-  status: { type: String, default: 'OFF' },
-});
-
-const Device = mongoose.model('Device', deviceSchema);
-
-// Routes
-
-// Test Route
-app.get('/', (req, res) => {
-  res.send('Backend is running!');
-});
-
-// Add a Device
-app.post('/devices', async (req, res) => {
-  try {
-    const newDevice = new Device(req.body);
-    await newDevice.save();
-    res.status(201).json(newDevice);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+// Device Discovery
+const discoverDevices = async () => {
+  const session = ping.createSession();
+  const localNetwork = '192.168.1.'; // Example subnet
+  for (let i = 1; i <= 255; i++) {
+    const ip = `${localNetwork}${i}`;
+    session.pingHost(ip, async (error) => {
+      if (!error) {
+        const existingDevice = await Device.findOne({ ipAddress: ip });
+        if (!existingDevice) {
+          const newDevice = new Device({ deviceId: `Device-${i}`, name: `Device ${i}`, ipAddress: ip });
+          await newDevice.save();
+          console.log(`Discovered and added: ${ip}`);
+        }
+      }
+    });
   }
+};
+
+// MQTT Connection
+const mqttClient = mqtt.connect('mqtt://broker.hivemq.com');
+mqttClient.on('connect', () => {
+  console.log('Connected to MQTT broker');
+  mqttClient.subscribe('devices/status');
 });
 
-// Get All Devices
+mqttClient.on('message', (topic, message) => {
+  console.log(`Received message on ${topic}: ${message}`);
+});
+
+// REST API
+
+
 app.get('/devices', async (req, res) => {
-  try {
-    const devices = await Device.find();
-    res.status(200).json(devices);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  console.log('GET /devices route accessed');
+  const devices = await Device.find();
+  res.json(devices);
 });
 
-// Update Device Status
-app.put('/devices/:id', async (req, res) => {
-  try {
-    const updatedDevice = await Device.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    res.status(200).json(updatedDevice);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+app.get('*', (req, res) => {
+  res.status(404).send('Route not found');
 });
 
-// Delete a Device
-app.delete('/devices/:id', async (req, res) => {
-  try {
-    await Device.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: 'Device deleted' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
-// Start the Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(process.env.PORT, async () => {
+  console.log(`Server running on port ${process.env.PORT}`);
+  await discoverDevices(); // Run device discovery on startup
+});
