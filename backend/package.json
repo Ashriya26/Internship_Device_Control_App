@@ -15,9 +15,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "mongoose": "^8.10.1",
     "mqtt": "^5.10.3",
-    "net-ping": "^1.2.4"
+    "net-ping": "^1.2.4",
+    "sqlite3": "^5.1.7"
   },
   "description": ""
 }
