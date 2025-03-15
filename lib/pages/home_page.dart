@@ -30,6 +30,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void deleteDevice(int index) {
+    setState(() {
+      devices.removeAt(index);
+    });
+  }
+
   void showAddOptions(BuildContext context) {
     showDialog(
       context: context,
@@ -135,7 +141,7 @@ class _HomePageState extends State<HomePage> {
                         isOn: devices[index]["status"],
                         isConnected: devices[index]["status"],
                         onTap: () async {
-                          final updatedStatus = await Navigator.push(
+                          final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => DeviceControlPage(
@@ -149,8 +155,8 @@ class _HomePageState extends State<HomePage> {
                             ),
                           );
 
-                          if (updatedStatus != null) {
-                            updateDeviceStatus(index, updatedStatus);
+                          if (result == true) {
+                            deleteDevice(index);
                           }
                         },
                       );

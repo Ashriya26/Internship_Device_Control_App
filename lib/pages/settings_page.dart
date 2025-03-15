@@ -194,9 +194,9 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                         child: Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.wifi,
-                              color: const Color.fromARGB(255, 223, 127, 24),
+                              color: Color.fromARGB(255, 223, 127, 24),
                             ),
                             const SizedBox(width: 10),
                             Text(

@@ -17,7 +17,7 @@ class OptionsPopup extends StatelessWidget {
               width: 200, // Smaller width instead of full screen
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Color.fromARGB(255, 235, 171, 75), // 🔸 Full orange background
+                color: const Color.fromARGB(255, 235, 171, 75), // 🔸 Full orange background
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(

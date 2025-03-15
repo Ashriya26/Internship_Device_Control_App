@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/delete_device.dart';
 
 class DeviceControlPage extends StatefulWidget {
   final String deviceName;
@@ -7,6 +8,7 @@ class DeviceControlPage extends StatefulWidget {
   final String deviceModel;
   final String firmwareVersion;
   final String lastActiveTime;
+  final Function(String)? onDeleteDevice; // Callback to notify Home Page
 
   const DeviceControlPage({
     super.key,
@@ -16,6 +18,7 @@ class DeviceControlPage extends StatefulWidget {
     required this.deviceModel,
     required this.firmwareVersion,
     required this.lastActiveTime,
+    this.onDeleteDevice, // Callback added
   });
 
   @override
@@ -35,6 +38,22 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
     setState(() {
       isDeviceOn = !isDeviceOn;
     });
+  }
+
+  void _showDeletePopup() {
+    showDialog(
+      context: context,
+      barrierDismissible: true, // Allow closing by tapping outside
+      builder: (BuildContext context) {
+        return DeleteDevicePopup(
+          onDelete: () {
+            widget.onDeleteDevice?.call(widget.deviceName); // Notify Home Page
+            Navigator.pop(context); // Close popup after deletion
+            Navigator.pop(context, true); // Close Device Control Page
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -101,7 +120,7 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: _showDeletePopup,
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: const BoxDecoration(
@@ -125,14 +144,14 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(color: Colors.black26, blurRadius: 5),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Device Name (Heading Inside Box)
+                    // Device Name
                     Text(
                       widget.deviceName,
                       style: const TextStyle(
@@ -143,75 +162,15 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
 
                     const SizedBox(height: 15),
 
-                    // Connected to (At the top)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Connected to:",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          widget.networkName,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
+                    // Device Info
+                    _buildDeviceInfo("Connected to:", widget.networkName),
+                    _buildDeviceInfo("Device Model:", widget.deviceModel),
+                    _buildDeviceInfo("Firmware Version:", widget.firmwareVersion),
+                    _buildDeviceInfo("Last Active:", widget.lastActiveTime),
 
                     const SizedBox(height: 10),
 
-                    // Device Model
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Device Model:",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          widget.deviceModel,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Firmware Version
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Firmware Version:",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          widget.firmwareVersion,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Last Active Time
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Last Active:",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          widget.lastActiveTime,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Status (At the bottom, aligned right)
+                    // Status Indicator
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -232,7 +191,7 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
 
               const SizedBox(height: 20),
 
-              // Separate Toggle Bar (Full Width)
+              // Toggle Button (ON/OFF)
               GestureDetector(
                 onTap: toggleDevice,
                 child: Container(
@@ -241,45 +200,15 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(50),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(color: Colors.black26, blurRadius: 8),
                     ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // ON Button
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 35),
-                        decoration: BoxDecoration(
-                          color: isDeviceOn ? Colors.orange : Colors.white,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Text(
-                          "ON",
-                          style: TextStyle(
-                            fontSize: 24,
-                            color: isDeviceOn ? Colors.white : Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      // OFF Button
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 35),
-                        decoration: BoxDecoration(
-                          color: isDeviceOn ? Colors.white : Colors.orange,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Text(
-                          "OFF",
-                          style: TextStyle(
-                            fontSize: 24,
-                            color: isDeviceOn ? Colors.black : Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      _buildToggleButton("ON", isDeviceOn),
+                      _buildToggleButton("OFF", !isDeviceOn),
                     ],
                   ),
                 ),
@@ -287,6 +216,45 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  // Helper function for Device Info Rows
+  Widget _buildDeviceInfo(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper function for ON/OFF Buttons
+  Widget _buildToggleButton(String text, bool isActive) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 35),
+      decoration: BoxDecoration(
+        color: isActive ? Colors.orange : Colors.white,
+        borderRadius: BorderRadius.circular(50),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 24,
+          color: isActive ? Colors.white : Colors.black,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
