@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 class DeviceCard extends StatelessWidget {
   final String name;
   final bool isOn;
-  final bool isConnected; // To determine connection status (True/False)
+  final bool isConnected;
   final VoidCallback onTap;
 
   const DeviceCard({
     super.key,
     required this.name,
     required this.isOn,
-    required this.isConnected, // Adding this parameter
+    required this.isConnected,
     required this.onTap,
   });
 
@@ -19,7 +19,7 @@ class DeviceCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12), // Adjusted padding
         decoration: BoxDecoration(
           color: isOn ? Colors.white : const Color.fromARGB(255, 99, 99, 99),
           borderRadius: BorderRadius.circular(12),
@@ -32,41 +32,47 @@ class DeviceCard extends StatelessWidget {
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Align everything to the left
+          crossAxisAlignment: CrossAxisAlignment.start, // Aligns all text to the left
           children: [
-            // Image at the center, with larger icon size
+            // Reduced Space Above Icon
+            const SizedBox(height: 5), 
+            
+            // Device Icon Centered
             Center(
               child: Image.asset(
-                isOn 
-                  ? 'assets/images/light_on.png' 
-                  : 'assets/images/light_off.png',  // Change icon based on state
-                width: isOn ? 63.5 : 50, // Set larger width for 'on' state
-                height: isOn ? 63.5 : 50, // Set larger height for 'on' state
+                isOn ? 'assets/images/light_on.png' : 'assets/images/light_off.png',
+                width: 60,
+                height: 60,
               ),
             ),
-            const SizedBox(height: 0.5), // Reduced gap
-            // Device name text
+
+            const SizedBox(height: 3), // Reduced spacing after icon
+
+            // Device Name (First Row)
             Text(
               name,
               style: TextStyle(
-                fontSize: 17,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: isOn ? Colors.black : Colors.white,
-                fontFamily: 'Montserrat', // Using custom font
+                fontFamily: 'Montserrat',
               ),
+              softWrap: true,
+              maxLines: 2, // Allows long names to wrap
+              overflow: TextOverflow.ellipsis, // Prevents overflow errors
             ),
-            const SizedBox(height: 0.5), // Reduced gap
-            // Connection status text (Connected / Offline)
+
+            const SizedBox(height: 4), // Spacing between name & status
+            
+            // Connection Status (Second Row)
             Text(
               isConnected ? 'Connected' : 'Offline',
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.normal,
-                color: isConnected ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 255, 255, 255),
-                fontFamily: 'Montserrat', // Using custom font
+                fontSize: 14,
+                color: isConnected ? Colors.black : Colors.white,
+                fontFamily: 'Montserrat',
               ),
             ),
-            const SizedBox(height: 0.5), // Reduced gap to the bottom
           ],
         ),
       ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-import 'details_page.dart'; // Import DetailsPage
+import '../widgets/NetworkDetailsDialogue.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -12,43 +12,76 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   List<Map<String, dynamic>> availableNetworks = [
     {"name": "Office", "strength": 3, "secure": true, "connected": false},
-    {"name": "HomeWifi_Personal", "strength": 4, "secure": false, "connected": true},
+    {"name": "HomeWifi_Personal", "strength": 4, "secure": false, "connected": false},
     {"name": "AbcdefghiKLM_0987", "strength": 2, "secure": true, "connected": false},
-    {"name": "Defghi", "strength": 5, "secure": false, "connected": true},
+    {"name": "Defghi", "strength": 5, "secure": false, "connected": false},
   ];
+
+  Map<String, dynamic>? connectedNetwork;
+
+  @override
+  void initState() {
+    super.initState();
+    connectToStrongestNetwork();
+  }
 
   void scanForNetworks() {
     setState(() {
       availableNetworks = [
         {"name": "Network_A", "strength": 4, "secure": true, "connected": false},
-        {"name": "Network_B", "strength": 5, "secure": false, "connected": true},
+        {"name": "Network_B", "strength": 5, "secure": false, "connected": false},
         {"name": "Network_C", "strength": 3, "secure": true, "connected": false},
         {"name": "Network_D", "strength": 2, "secure": false, "connected": false},
       ];
     });
   }
 
-  void navigateToDetailsPage(String ssid) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DetailsPage(
-          deviceId: '',
-          onDeviceIdChanged: (String newDeviceId) {},
-          ssid: ssid, // Pass selected network name
-        ),
-      ),
-    );
+  void connectToStrongestNetwork() {
+    availableNetworks.sort((a, b) => b["strength"].compareTo(a["strength"]));
+    setState(() {
+      connectedNetwork = availableNetworks.first;
+      connectedNetwork!["connected"] = true;
+      availableNetworks.removeAt(0);
+    });
   }
+
+  void connectToNetwork(Map<String, dynamic> network) {
+    if (network["secure"]) {
+      showDialog(
+        context: context,
+        builder: (context) => NetworkDetailsDialogue(
+          ssid: network["name"],
+          onConnect: (ssid, password) {
+            setState(() {
+              if (connectedNetwork != null) {
+                connectedNetwork!["connected"] = false;
+                availableNetworks.add(connectedNetwork!); // Move old network down
+              }
+              availableNetworks.remove(network);
+              network["connected"] = true;
+              connectedNetwork = network;
+            });
+          },
+        ),
+      );
+    } else {
+      setState(() {
+        if (connectedNetwork != null) {
+          connectedNetwork!["connected"] = false;
+          availableNetworks.add(connectedNetwork!);
+        }
+        availableNetworks.remove(network);
+        network["connected"] = true;
+        connectedNetwork = network;
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    Map<String, dynamic>? connectedNetwork = availableNetworks.firstWhere(
-      (network) => network["connected"] == true,
-      orElse: () => null,
-    );
-
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Container(
@@ -61,6 +94,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           Column(
             children: [
+              // App Bar
               Container(
                 height: 80,
                 margin: const EdgeInsets.only(top: 30),
@@ -83,9 +117,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // Back Button
                       GestureDetector(
                         onTap: () => Navigator.pushReplacement(
-                            context, MaterialPageRoute(builder: (context) => const HomePage())),
+                          context, MaterialPageRoute(builder: (context) => const HomePage())
+                        ),
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: const BoxDecoration(
@@ -95,6 +131,8 @@ class _SettingsPageState extends State<SettingsPage> {
                           child: const Icon(Icons.arrow_back, color: Colors.white),
                         ),
                       ),
+                      
+                      // Title
                       const Text(
                         "Settings",
                         style: TextStyle(
@@ -103,8 +141,12 @@ class _SettingsPageState extends State<SettingsPage> {
                           color: Colors.black,
                         ),
                       ),
+
+                      // ✅ Restored Settings Icon
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          print("Settings Icon Tapped");
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: const BoxDecoration(
@@ -118,8 +160,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
 
+              // Connected Network Box
               if (connectedNetwork != null)
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -150,10 +194,13 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.wifi, color: Color.fromARGB(255, 223, 127, 24)),
+                            Icon(
+                              Icons.wifi,
+                              color: const Color.fromARGB(255, 223, 127, 24),
+                            ),
                             const SizedBox(width: 10),
                             Text(
-                              connectedNetwork["name"],
+                              connectedNetwork!["name"],
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                             ),
                           ],
@@ -163,6 +210,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
 
+              // Available Networks
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 padding: const EdgeInsets.all(16),
@@ -187,7 +235,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     const SizedBox(height: 10),
                     ...availableNetworks.map((network) => GestureDetector(
-                          onTap: () => navigateToDetailsPage(network["name"]),
+                          onTap: () => connectToNetwork(network),
                           child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 5),
                             padding: const EdgeInsets.all(10),
@@ -211,12 +259,11 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                         )),
                     const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
+                    Center(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 40),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
@@ -224,11 +271,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         onPressed: scanForNetworks,
                         child: const Text(
                           "Scan for Networks",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
