@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.orange,
         fontFamily: 'Montserrat',
       ),
-      initialRoute: '/',
+      initialRoute: '/', // Home Page is the default
       routes: {
         '/': (context) => const HomePage(),
         '/settings': (context) => const SettingsPage(),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/delete_device.dart';
+import '../widgets/edit_device.dart';
+import 'home_page.dart';
+import '../widgets/device_card.dart';
 
 class DeviceControlPage extends StatefulWidget {
   final String deviceName;
@@ -9,6 +12,7 @@ class DeviceControlPage extends StatefulWidget {
   final String firmwareVersion;
   final String lastActiveTime;
   final Function(String)? onDeleteDevice; // Callback to notify Home Page
+  final Function(bool) onToggleDevice; // ✅ Accept onToggleDevice
 
   const DeviceControlPage({
     super.key,
@@ -18,7 +22,9 @@ class DeviceControlPage extends StatefulWidget {
     required this.deviceModel,
     required this.firmwareVersion,
     required this.lastActiveTime,
+    
     this.onDeleteDevice, // Callback added
+    required this.onToggleDevice, // ✅ Initialize it
   });
 
   @override
@@ -26,35 +32,56 @@ class DeviceControlPage extends StatefulWidget {
 }
 
 class _DeviceControlPageState extends State<DeviceControlPage> {
+  late String deviceName;
   late bool isDeviceOn;
+  late bool deviceStatus;
 
   @override
   void initState() {
     super.initState();
+    deviceName = widget.deviceName;
     isDeviceOn = widget.initialStatus;
+    deviceStatus=widget.initialStatus;
   }
+
 
   void toggleDevice() {
     setState(() {
-      isDeviceOn = !isDeviceOn;
+      deviceStatus = !deviceStatus;
+      widget.onToggleDevice(deviceStatus); // ✅ Notify Home Page about the change
     });
   }
 
+
+
   void _showDeletePopup() {
-    showDialog(
-      context: context,
-      barrierDismissible: true, // Allow closing by tapping outside
-      builder: (BuildContext context) {
-        return DeleteDevicePopup(
-          onDelete: () {
-            widget.onDeleteDevice?.call(widget.deviceName); // Notify Home Page
-            Navigator.pop(context); // Close popup after deletion
-            Navigator.pop(context, true); // Close Device Control Page
-          },
-        );
-      },
-    );
-  }
+  showDialog(
+    context: context,
+    barrierDismissible: true, // Allow closing by tapping outside
+    builder: (BuildContext context) {
+      return DeleteDevicePopup(
+        onDelete: () {
+          if (widget.onDeleteDevice != null) {
+            widget.onDeleteDevice!(widget.deviceName); // Notify Home Page
+          }
+          Navigator.pop(context); // Close the popup
+          
+          // Ensure redirection to Home Page after deletion
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomePage()), // Ensure this is your actual Home Page widget
+                (route) => false, // Remove all previous routes
+              );
+            }
+          });
+        },
+      );
+    },
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +128,7 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap: () => Navigator.pop(context, isDeviceOn),
+                        onTap: () => Navigator.pop(context, false),
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: const BoxDecoration(
@@ -151,16 +178,29 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Device Name
-                    Text(
-                      widget.deviceName,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    // Device Name with Edit Icon
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          deviceName,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        EditDeviceWidget(
+                          initialName: deviceName,
+                          onNameUpdated: (newName) {
+                            setState(() {
+                              deviceName = newName; // Update UI when name changes
+                            });
+                          },
+                        ),
+                      ],
                     ),
 
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 25),
 
                     // Device Info
                     _buildDeviceInfo("Connected to:", widget.networkName),
@@ -168,17 +208,23 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                     _buildDeviceInfo("Firmware Version:", widget.firmwareVersion),
                     _buildDeviceInfo("Last Active:", widget.lastActiveTime),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 30),
 
-                    // Status Indicator
+                    // Status Indicator with Heading
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Spacer(), // Push status to the right
+                        const Text(
+                          "Status:",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         Text(
                           isDeviceOn ? "ON" : "OFF",
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: isDeviceOn ? Colors.green : Colors.red,
                           ),
@@ -233,7 +279,7 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
           ),
           Text(
             value,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18),
           ),
         ],
       ),

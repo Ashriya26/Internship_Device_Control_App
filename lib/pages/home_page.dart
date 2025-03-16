@@ -12,27 +12,35 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> devices = [
-    {"name": "Main Lights", "status": false, "model": "Light-X1", "firmware": "v1.0.1", "lastActive": "5 mins ago"},
-    {"name": "ABC_ui78", "status": false, "model": "SmartPlug-2", "firmware": "v2.3.0", "lastActive": "10 mins ago"},
-    {"name": "Mixer", "status": false, "model": "MixPro", "firmware": "v1.5.2", "lastActive": "2 hours ago"},
-    {"name": "Hall Fan", "status": false, "model": "CoolBreeze 5", "firmware": "v3.1.4", "lastActive": "30 mins ago"},
-    {"name": "EDSF_897yf", "status": false, "model": "Unknown", "firmware": "Unknown", "lastActive": "Offline"},
-    {"name": "Bedroom Fan", "status": false, "model": "BreezeMax", "firmware": "v1.2.5", "lastActive": "1 hour ago"},
-    {"name": "Bedroom Light", "status": false, "model": "LightBeam", "firmware": "v1.4.0", "lastActive": "20 mins ago"},
-    {"name": "Fridge", "status": false, "model": "FreezeMaster", "firmware": "v2.1.1", "lastActive": "15 mins ago"},
-    {"name": "AC", "status": false, "model": "CoolX 500", "firmware": "v4.2.0", "lastActive": "3 hours ago"},
-    {"name": "GDYGWD_98324", "status": false, "model": "Unknown", "firmware": "Unknown", "lastActive": "Offline"},
+    {"id": "1", "name": "Main Lights", "status": false, "model": "Light-X1", "firmware": "v1.0.1", "lastActive": "5 mins ago"},
+    {"id": "2", "name": "ABC_ui78", "status": false, "model": "SmartPlug-2", "firmware": "v2.3.0", "lastActive": "10 mins ago"},
+    {"id": "3", "name": "Mixer", "status": false, "model": "MixPro", "firmware": "v1.5.2", "lastActive": "2 hours ago"},
+    {"id": "4", "name": "Hall Fan", "status": false, "model": "CoolBreeze 5", "firmware": "v3.1.4", "lastActive": "30 mins ago"},
+    {"id": "5", "name": "EDSF_897yf", "status": false, "model": "Unknown", "firmware": "Unknown", "lastActive": "Offline"},
+    {"id": "6", "name": "Bedroom Fan", "status": false, "model": "BreezeMax", "firmware": "v1.2.5", "lastActive": "1 hour ago"},
+    {"id": "7", "name": "Bedroom Light", "status": false, "model": "LightBeam", "firmware": "v1.4.0", "lastActive": "20 mins ago"},
+    {"id": "8", "name": "Fridge", "status": false, "model": "FreezeMaster", "firmware": "v2.1.1", "lastActive": "15 mins ago"},
+    {"id": "9", "name": "AC", "status": false, "model": "CoolX 500", "firmware": "v4.2.0", "lastActive": "3 hours ago"},
+    {"id": "10", "name": "GDYGWD_98324", "status": false, "model": "Unknown", "firmware": "Unknown", "lastActive": "Offline"},
   ];
 
-  void updateDeviceStatus(int index, bool newStatus) {
+  void updateDeviceStatus(String deviceId, bool newStatus) {
     setState(() {
-      devices[index]["status"] = newStatus;
+      for (var device in devices) {
+        if (device["id"] == deviceId) {
+          device["status"] = newStatus;
+          break;
+        }
+      }
     });
   }
 
-  void deleteDevice(int index) {
+  void deleteDevice(String deviceId) {
     setState(() {
-      devices.removeAt(index);
+      int indexToDelete = devices.indexWhere((device) => device["id"] == deviceId);
+      if (indexToDelete != -1) {
+        devices.removeAt(indexToDelete);
+      }
     });
   }
 
@@ -51,6 +59,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Stack(
         children: [
+          // 🔹 Background Image
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -63,9 +72,10 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+
           Column(
             children: [
-              // AppBar
+              // 🔹 AppBar
               Container(
                 height: 80,
                 margin: const EdgeInsets.only(top: 30),
@@ -123,7 +133,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              // Device Grid
+              // 🔹 Device Grid
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -151,13 +161,35 @@ class _HomePageState extends State<HomePage> {
                                 deviceModel: devices[index]["model"],
                                 firmwareVersion: devices[index]["firmware"],
                                 lastActiveTime: devices[index]["lastActive"],
+                                onDeleteDevice: (deviceName) {
+                                  String deviceIdToDelete = devices[index]["id"];
+                                  deleteDevice(deviceIdToDelete);
+                                },
+                                /// ✅ Pass `onToggleDevice` to update in real-time
+                                onToggleDevice: (newStatus) {
+                                  setState(() {
+                                    devices[index]["status"] = newStatus;
+                                  });
+                                },
                               ),
                             ),
                           );
 
-                          if (result == true) {
-                            deleteDevice(index);
+                          // ✅ Fix: Check if the device still exists before updating
+                          if (result is bool) {
+                            setState(() {
+                              int updatedIndex = devices.indexWhere((device) => device["id"] == devices[index]["id"]);
+                              if (updatedIndex != -1) {
+                                devices[updatedIndex]["status"] = result;
+                              }
+                            });
                           }
+                        },
+                        /// ✅ **Fix: Add `onToggleDevice` here too**
+                        onToggleDevice: (newStatus) {
+                          setState(() {
+                            devices[index]["status"] = newStatus;
+                          });
                         },
                       );
                     },

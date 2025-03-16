@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import '../pages/home_page.dart';
 
 class DeviceCard extends StatelessWidget {
   final String name;
   final bool isOn;
   final bool isConnected;
   final VoidCallback onTap;
+  final Function(bool) onToggleDevice; // ✅ Add this
 
   const DeviceCard({
     super.key,
@@ -12,6 +14,7 @@ class DeviceCard extends StatelessWidget {
     required this.isOn,
     required this.isConnected,
     required this.onTap,
+    required this.onToggleDevice,
   });
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:device_control_app/pages/home_page.dart';
 
 class DeleteDevicePopup extends StatelessWidget {
   final VoidCallback onDelete;
@@ -8,29 +9,29 @@ class DeleteDevicePopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.transparent, // Transparent to match UI
+      backgroundColor: Colors.transparent,
       child: Container(
-        width: 280, // Smaller width
+        width: 280,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 235, 171, 75), // Orange background
+          color: const Color.fromARGB(255, 235, 171, 75),
           borderRadius: BorderRadius.circular(15),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 🔹 White Header Box (Smaller & Lower)
+            // 🔹 Header Box
             Container(
-              width: 230, // Smaller than options box
+              width: 230,
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(30),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     "Delete Device",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -38,7 +39,7 @@ class DeleteDevicePopup extends StatelessWidget {
                       color: Colors.black,
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.delete,
                     color: Color.fromARGB(255, 235, 171, 75),
                     size: 24,
@@ -46,7 +47,7 @@ class DeleteDevicePopup extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 20), // Space below the header
+            const SizedBox(height: 20),
 
             // 🔹 Confirmation Text
             const Text(
@@ -63,7 +64,7 @@ class DeleteDevicePopup extends StatelessWidget {
                 // Cancel Button
                 TextButton(
                   style: TextButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 200, 120, 50), // Darker orange
+                    backgroundColor: const Color.fromARGB(255, 200, 120, 50),
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
@@ -75,20 +76,34 @@ class DeleteDevicePopup extends StatelessWidget {
                     style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
-                const SizedBox(width: 10), // Space between buttons
+                const SizedBox(width: 10),
 
                 // Confirm Button
                 TextButton(
                   style: TextButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 200, 120, 50), // Darker orange
+                    backgroundColor: const Color.fromARGB(255, 200, 120, 50),
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onPressed: () {
-                    onDelete(); // Calls delete function
-                    Navigator.pop(context); // Closes popup
-                    Navigator.pop(context); // Closes Device Control Page
+                    onDelete(); // Deletes the device
+
+                    // 🔹 Close the delete confirmation popup
+                    Navigator.pop(context);
+
+                    // 🔹 Close the Device Control Page and go to Home Page
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      if (context.mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const HomePage()),
+                          (route) => false, // Remove all previous pages
+                        );
+                      }
+                    });
                   },
+
+
                   child: const Text(
                     "Confirm",
                     style: TextStyle(color: Colors.white, fontSize: 16),
