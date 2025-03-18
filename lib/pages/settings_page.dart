@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import '../widgets/NetworkDetailsDialogue.dart';
+import 'package:provider/provider.dart';
+import '../providers/network_provider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -23,6 +25,10 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     connectToStrongestNetwork();
+
+    Future.microtask(() {
+    connectToStrongestNetwork();
+    });
   }
 
   void scanForNetworks() {
@@ -42,6 +48,9 @@ class _SettingsPageState extends State<SettingsPage> {
       connectedNetwork = availableNetworks.first;
       connectedNetwork!["connected"] = true;
       availableNetworks.removeAt(0);
+
+      // ✅ Update Provider with the new connected network name
+      Provider.of<NetworkProvider>(context, listen: false).updateNetwork(connectedNetwork!["name"]);
     });
   }
 
@@ -60,6 +69,10 @@ class _SettingsPageState extends State<SettingsPage> {
               availableNetworks.remove(network);
               network["connected"] = true;
               connectedNetwork = network;
+
+              // ✅ Update Provider with the new connected network name
+              Provider.of<NetworkProvider>(context, listen: false).updateNetwork(network["name"]);
+          
             });
           },
         ),
@@ -73,6 +86,10 @@ class _SettingsPageState extends State<SettingsPage> {
         availableNetworks.remove(network);
         network["connected"] = true;
         connectedNetwork = network;
+
+        // ✅ Update Provider with the new connected network name
+        Provider.of<NetworkProvider>(context, listen: false).updateNetwork(network["name"]);
+    
       });
     }
   }

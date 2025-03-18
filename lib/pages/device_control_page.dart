@@ -3,6 +3,9 @@ import '../widgets/delete_device.dart';
 import '../widgets/edit_device.dart';
 import 'home_page.dart';
 import '../widgets/device_card.dart';
+import 'settings_page.dart';
+import 'package:provider/provider.dart';
+import '../providers/network_provider.dart';
 
 class DeviceControlPage extends StatefulWidget {
   final String deviceName;
@@ -221,11 +224,33 @@ void updateDeviceStatus(String deviceName, bool newStatus) {
                     const SizedBox(height: 25),
 
                     // Device Info
-                    _buildDeviceInfo("Connected to:", widget.networkName),
-                    _buildDeviceInfo("Device Model:", widget.deviceModel),
-                    _buildDeviceInfo("Firmware Version:", widget.firmwareVersion),
-                    _buildDeviceInfo("Last Active:", widget.lastActiveTime),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start, // Keep left alignment
+                        children: [
+                          // Connected to (Left-aligned)
+                          const Text(
+                            "Connected to:",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                          ),
+                          
+                          const SizedBox(height: 4), // Small space before network name
 
+                          // Network Name (Centered)
+                          Align(
+                            alignment: Alignment.center, // Center-align only the network name
+                            child: Text(
+                              Provider.of<NetworkProvider>(context).connectedNetwork,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 169, 203, 75)),
+                            ),
+                          ),
+
+                          const SizedBox(height: 15), // Space before the next fields
+
+                          _buildDeviceInfo("Device Model:", widget.deviceModel),
+                          _buildDeviceInfo("Firmware Version:", widget.firmwareVersion),
+                          _buildDeviceInfo("Last Active:", widget.lastActiveTime),
+                        ],
+                      ),
                     const SizedBox(height: 30),
 
                     // Status Indicator with Heading

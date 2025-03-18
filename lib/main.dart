@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
+import 'package:provider/provider.dart';
+import 'providers/network_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => NetworkProvider()), // Add NetworkProvider
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
