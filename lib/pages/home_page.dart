@@ -24,16 +24,26 @@ class _HomePageState extends State<HomePage> {
     {"id": "10", "name": "GDYGWD_98324", "status": false, "model": "Unknown", "firmware": "Unknown", "lastActive": "Offline"},
   ];
 
-  void updateDeviceStatus(String deviceId, bool newStatus) {
+void updateDeviceStatus(String name, bool status) {
+  setState(() {
+    devices = devices.map((device) {
+      if (device["name"] == name) {
+        device["status"] = status; // Update status in device list
+      }
+      return device;
+    }).toList();
+  });
+}
+  /// ✅ **Function to update device name**
+  void updateDeviceName(String deviceId, String newName) {
     setState(() {
-      for (var device in devices) {
-        if (device["id"] == deviceId) {
-          device["status"] = newStatus;
-          break;
-        }
+      int index = devices.indexWhere((device) => device["id"] == deviceId);
+      if (index != -1) {
+        devices[index]["name"] = newName;
       }
     });
   }
+
 
   void deleteDevice(String deviceId) {
     setState(() {
@@ -164,6 +174,10 @@ class _HomePageState extends State<HomePage> {
                                 onDeleteDevice: (deviceName) {
                                   String deviceIdToDelete = devices[index]["id"];
                                   deleteDevice(deviceIdToDelete);
+                                },
+                                /// ✅ **Pass `onNameUpdated` to update Home Page**
+                                onNameUpdated: (newName) {
+                                  updateDeviceName(devices[index]["id"], newName);
                                 },
                                 /// ✅ Pass `onToggleDevice` to update in real-time
                                 onToggleDevice: (newStatus) {

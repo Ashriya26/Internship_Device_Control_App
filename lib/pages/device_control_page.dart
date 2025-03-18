@@ -13,6 +13,7 @@ class DeviceControlPage extends StatefulWidget {
   final String lastActiveTime;
   final Function(String)? onDeleteDevice; // Callback to notify Home Page
   final Function(bool) onToggleDevice; // ✅ Accept onToggleDevice
+  final Function(String) onNameUpdated; // ✅ Callback to update Home Page
 
   const DeviceControlPage({
     super.key,
@@ -22,7 +23,8 @@ class DeviceControlPage extends StatefulWidget {
     required this.deviceModel,
     required this.firmwareVersion,
     required this.lastActiveTime,
-    
+    required this.onNameUpdated, // ✅ Initialize
+
     this.onDeleteDevice, // Callback added
     required this.onToggleDevice, // ✅ Initialize it
   });
@@ -42,15 +44,29 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
     deviceName = widget.deviceName;
     isDeviceOn = widget.initialStatus;
     deviceStatus=widget.initialStatus;
+    
   }
 
 
-  void toggleDevice() {
-    setState(() {
-      deviceStatus = !deviceStatus;
-      widget.onToggleDevice(deviceStatus); // ✅ Notify Home Page about the change
-    });
+
+
+void toggleDevice() {
+  setState(() {
+    isDeviceOn = !isDeviceOn; // Toggle the state
+  });
+
+  if (deviceName.isNotEmpty) {
+    widget.onToggleDevice(isDeviceOn); // ✅ Notify Home Page
+    updateDeviceStatus(deviceName, isDeviceOn);
+    Navigator.pop(context, isDeviceOn); // ✅ Go back to Home Page
   }
+}
+
+void updateDeviceStatus(String deviceName, bool newStatus) {
+  print("Updating $deviceName status to ${newStatus ? "ON" : "OFF"}");
+}
+
+
 
 
 
@@ -195,6 +211,8 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                             setState(() {
                               deviceName = newName; // Update UI when name changes
                             });
+                            widget.onNameUpdated(newName); // ✅ Notify Home Page
+
                           },
                         ),
                       ],
@@ -244,7 +262,7 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                   width: MediaQuery.of(context).size.width * 0.85,
                   padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                     color: Colors.white,
                     borderRadius: BorderRadius.circular(50),
                     boxShadow: const [
                       BoxShadow(color: Colors.black26, blurRadius: 8),

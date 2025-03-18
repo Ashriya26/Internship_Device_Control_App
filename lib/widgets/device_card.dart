@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pages/home_page.dart';
-
+import '../widgets/edit_device.dart';
 class DeviceCard extends StatelessWidget {
   final String name;
   final bool isOn;
