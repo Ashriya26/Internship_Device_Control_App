@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../widgets/delete_device.dart';
 import '../widgets/edit_device.dart';
 import 'home_page.dart';
-import '../widgets/device_card.dart';
-import 'settings_page.dart';
 import 'package:provider/provider.dart';
 import '../providers/network_provider.dart';
 
@@ -105,6 +103,7 @@ void updateDeviceStatus(String deviceName, bool newStatus) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // Background Image

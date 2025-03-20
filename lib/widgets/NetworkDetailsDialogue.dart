@@ -19,7 +19,7 @@ class _NetworkDetailsDialogueState extends State<NetworkDetailsDialogue> {
     return Stack(
       children: [
         Positioned(
-          top: MediaQuery.of(context).size.height * 0.3, // ✅ Slightly above center
+          top: MediaQuery.of(context).size.height * 0.2, // ✅ Slightly above center
           left: 20,
           right: 20,
           child: Dialog(
