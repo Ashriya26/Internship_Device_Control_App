@@ -66,7 +66,12 @@ void updateDeviceStatus(String name, bool status) {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+    onWillPop: () async {
+      return false; // 🔹 Prevents going back to login page
+    },
+    
+    child: Scaffold(
       body: Stack(
         children: [
           // 🔹 Background Image
@@ -109,7 +114,9 @@ void updateDeviceStatus(String name, bool status) {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {// 🔹 Logout and go back to login
+                          Navigator.pushReplacementNamed(context, '/login');
+                          },
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: const BoxDecoration(
@@ -214,6 +221,7 @@ void updateDeviceStatus(String name, bool status) {
           ),
         ],
       ),
+    ),
     );
   }
 }

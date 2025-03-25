@@ -4,6 +4,8 @@ import 'pages/settings_page.dart';
 import 'package:provider/provider.dart';
 import 'providers/network_provider.dart';
 
+import 'pages/login_page.dart';
+
 void main() {
   runApp(
     MultiProvider(
@@ -26,8 +28,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.orange,
         fontFamily: 'Montserrat',
       ),
-      initialRoute: '/', // Home Page is the default
+      initialRoute: '/login', // Home Page is the default
       routes: {
+        '/login': (content)=> const LoginPage(),
         '/': (context) => const HomePage(),
         '/settings': (context) => const SettingsPage(),
       },

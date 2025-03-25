@@ -62,6 +62,8 @@ flutter:
     - assets/images/light_off.png
     - assets/images/light_on.png
     - assets/images/back2.png
+    - assets/images/back4.png
+
     - assets/icons/add_color.png
     - assets/icons/add.png
     - assets/icons/back.png
