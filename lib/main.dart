@@ -3,19 +3,36 @@ import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'package:provider/provider.dart';
 import 'providers/network_provider.dart';
+import 'pages/start_page.dart'; // Import StartPage
+import 'package:shared_preferences/shared_preferences.dart';
+import '../backend/db_help.dart';
 
 import 'pages/login_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Required for async initialization
+  await _initializeApp(); // Call initialization function
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => NetworkProvider()), // Add NetworkProvider
+        ChangeNotifierProvider(create: (context) => NetworkProvider()),
       ],
       child: const MyApp(),
     ),
   );
 }
+
+Future<void> _initializeApp() async {
+  final prefs = await SharedPreferences.getInstance();
+  bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
+  if (isFirstTime) {
+    await DatabaseHelper.instance.insertUser("admin", "1234"); // ✅ Insert user
+    await prefs.setBool('isFirstTime', false); // ✅ Mark app as initialized
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -28,9 +45,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.orange,
         fontFamily: 'Montserrat',
       ),
-      initialRoute: '/login', // Home Page is the default
+      initialRoute: '/start', // Home Page is the default
       routes: {
-        '/login': (content)=> const LoginPage(),
+        '/start' :(context) => const StartPage(),
+        '/login': (context)=> const LoginPage(),
         '/': (context) => const HomePage(),
         '/settings': (context) => const SettingsPage(),
       },
