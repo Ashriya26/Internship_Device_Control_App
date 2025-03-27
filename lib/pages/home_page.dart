@@ -19,8 +19,9 @@ class _HomePageState extends State<HomePage> {
 @override
   void initState() {
     super.initState();
-    discoverDevices();  // ✅ Start discovery when page loads
     _udpService = UDPService(); // Initialize it
+
+    discoverDevices();  // ✅ Start discovery when page loads
 
   }
 
