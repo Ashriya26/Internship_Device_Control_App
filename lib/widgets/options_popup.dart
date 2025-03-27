@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/database_service.dart';
+import '../services/udp_service.dart';
+
 
 class OptionsPopup extends StatelessWidget {
   const OptionsPopup({super.key});
@@ -45,9 +48,35 @@ class OptionsPopup extends StatelessWidget {
                         color: Color.fromARGB(255, 235, 171, 75),
                         size: 24,
                       ),
-                      onTap: () {
-                        Navigator.pop(context); // Close popup
+                      onTap: () async {
+                        UDPService _udpService = UDPService();
+                        List<Map<String, String>> devices = [];
+
+                        // Discover devices and store them in the list
+                        await _udpService.discoverDevices((String id, String ip) {
+                          devices.add({"device_id": id, "ssid": "DefaultSSID", "password": "DefaultPass"});
+                        });
+
+                        if (devices.isNotEmpty) {
+                          for (var device in devices) {
+                            await DatabaseHelper.instance.insertDevice(
+                              device["device_id"]!,
+                              device["ssid"]!,
+                              device["password"]!,
+                            );
+                          }
+
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("${devices.length} Devices Added Successfully!")),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("No devices found.")),
+                          );
+                        }
                       },
+
                     ),
                   ),
 

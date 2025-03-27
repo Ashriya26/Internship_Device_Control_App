@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'providers/network_provider.dart';
 import 'pages/start_page.dart'; // Import StartPage
 import 'package:shared_preferences/shared_preferences.dart';
-import '../backend/db_help.dart';
+import 'services/database_service.dart';
 
 import 'pages/login_page.dart';
 

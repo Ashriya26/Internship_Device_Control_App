@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/device_card.dart';
 import '../widgets/options_popup.dart';
 import 'device_control_page.dart';
+import '../services/udp_service.dart';  // ✅ Import UDP Service
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,19 +12,39 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, dynamic>> devices = [
-    {"id": "1", "name": "Main Lights", "status": false, "model": "Light-X1", "firmware": "v1.0.1", "lastActive": "5 mins ago"},
-    {"id": "2", "name": "ABC_ui78", "status": false, "model": "SmartPlug-2", "firmware": "v2.3.0", "lastActive": "10 mins ago"},
-    {"id": "3", "name": "Mixer", "status": false, "model": "MixPro", "firmware": "v1.5.2", "lastActive": "2 hours ago"},
-    {"id": "4", "name": "Hall Fan", "status": false, "model": "CoolBreeze 5", "firmware": "v3.1.4", "lastActive": "30 mins ago"},
-    {"id": "5", "name": "EDSF_897yf", "status": false, "model": "Unknown", "firmware": "Unknown", "lastActive": "Offline"},
-    {"id": "6", "name": "Bedroom Fan", "status": false, "model": "BreezeMax", "firmware": "v1.2.5", "lastActive": "1 hour ago"},
-    {"id": "7", "name": "Bedroom Light", "status": false, "model": "LightBeam", "firmware": "v1.4.0", "lastActive": "20 mins ago"},
-    {"id": "8", "name": "Fridge", "status": false, "model": "FreezeMaster", "firmware": "v2.1.1", "lastActive": "15 mins ago"},
-    {"id": "9", "name": "AC", "status": false, "model": "CoolX 500", "firmware": "v4.2.0", "lastActive": "3 hours ago"},
-    {"id": "10", "name": "GDYGWD_98324", "status": false, "model": "Unknown", "firmware": "Unknown", "lastActive": "Offline"},
-  ];
+  List<Map<String, dynamic>> devices = [];
+    late UDPService _udpService; // ✅ Declare it here
 
+
+@override
+  void initState() {
+    super.initState();
+    discoverDevices();  // ✅ Start discovery when page loads
+    _udpService = UDPService(); // Initialize it
+
+  }
+
+
+  /// ✅ **Discover devices via UDP**
+  void discoverDevices() {
+    _udpService.discoverDevices((String id, String ip) {
+      setState(() {
+        // ✅ Check if the device already exists
+        bool exists = devices.any((device) => device["id"] == id);
+        if (!exists) {
+          devices.add({
+            "id": id,
+            "name": "Device-$id",
+            "status": false,
+            "ip": ip,  // ✅ Store IP
+            "model": "Unknown",
+            "firmware": "Unknown",
+            "lastActive": "Just Now",
+          });
+        }
+      });
+    });
+  }
 void updateDeviceStatus(String name, bool status) {
   setState(() {
     devices = devices.map((device) {
