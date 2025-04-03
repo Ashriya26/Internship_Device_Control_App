@@ -1,59 +1,66 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
+import 'database_service.dart'; // ✅ Import DatabaseHelper
 
 class UDPService {
   static const String broadcastAddress = "255.255.255.255";
   static const int port = 4210;
+  final DatabaseHelper dbHelper = DatabaseHelper.instance; // ✅ Use DatabaseHelper
 
   Future<void> discoverDevices(Function(String, String) onDeviceFound) async {
     try {
       RawDatagramSocket udpSocket =
-          await RawDatagramSocket.bind(InternetAddress.anyIPv4, port);
+          await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
 
-      udpSocket.send(utf8.encode(jsonEncode({'cmd': 'discover'})),
-          InternetAddress(broadcastAddress), port);
+      print("🔹 Broadcasting UDP discovery request...");
 
-      bool responseReceived = false;
+      // ✅ Send a UDP broadcast message to discover devices
+      udpSocket.send(
+        utf8.encode(jsonEncode({'cmd': 'discover'})), // ✅ Command to discover ESP32
+        InternetAddress(broadcastAddress, type: InternetAddressType.IPv4),
+        port,
+      );
+
+      // ✅ Set a timeout to wait for responses (3 seconds)
+      Completer<void> completer = Completer();
+      Timer(Duration(seconds: 3), () {
+        if (!completer.isCompleted) {
+          print("❌ No devices found within timeout.");
+          completer.complete();
+        }
+      });
 
       udpSocket.listen((event) {
         if (event == RawSocketEvent.read) {
           Datagram? dg = udpSocket.receive();
           if (dg != null) {
-            responseReceived = true;
             String response = utf8.decode(dg.data);
             Map<String, dynamic> data = jsonDecode(response);
 
-            // Extract Device ID and IP Address
-            String id = data['id'];
-            String ip = data['ip'];
+            String deviceId = data['device_id']; // ✅ Get Device ID from ESP response
+            String ip = data['ip']; // ✅ Get IP Address
 
-            onDeviceFound(id, ip);
+            print("✅ Device Found: $deviceId ($ip)");
+
+            // ✅ Store the discovered device in the database
+            dbHelper.insertDevice(deviceId, ip, ""); // Empty password for now
+
+            // ✅ Notify UI to update the device list
+            onDeviceFound(deviceId, ip);
+
+            // ✅ Stop waiting for responses once we receive at least one
+            if (!completer.isCompleted) {
+              completer.complete();
+            }
           }
         }
       });
 
-      // 🔹 If no real devices respond within 2 seconds, return dummy devices
-      await Future.delayed(Duration(seconds: 2));
-      if (!responseReceived) {
-        _addDummyDevices(onDeviceFound);
-      }
+      await completer.future; // Wait until timeout or first response
 
     } catch (e) {
-      print("Error in UDP Discovery: $e");
-      _addDummyDevices(onDeviceFound); // Use dummy data if an error occurs
-    }
-  }
-
-  // 🔹 Function to return dummy devices
-  void _addDummyDevices(Function(String, String) onDeviceFound) {
-    List<Map<String, String>> dummyDevices = [
-      {"id": "ESP_001", "ip": "192.168.1.10"},
-      {"id": "ESP_002", "ip": "192.168.1.11"},
-    ];
-
-    for (var device in dummyDevices) {
-      onDeviceFound(device["id"]!, device["ip"]!);
+      print("❌ Error in UDP Discovery: $e");
     }
   }
 }
