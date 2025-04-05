@@ -3,6 +3,56 @@ import '../widgets/device_card.dart';
 import '../widgets/options_popup.dart';
 import 'device_control_page.dart';
 import '../services/udp_service.dart';  // ✅ Import UDP Service
+import '../services/websocket_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/network_provider.dart';
+
+
+Future<void> getWiFiDetails(BuildContext context, WebSocketService ws, String ip) async {
+  String ssid = "";
+  String password = "";
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Enter Home WiFi Details"),
+        content: Column(
+          children: [
+            TextField(
+              onChanged: (val) => ssid = val,
+              decoration: const InputDecoration(labelText: "WiFi SSID"),
+            ),
+            TextField(
+              onChanged: (val) => password = val,
+              decoration: const InputDecoration(labelText: "WiFi Password"),
+              obscureText: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+         TextButton(
+            onPressed: () async {
+              await ws.sendWiFiDetails(
+                ssid,
+                password,
+                (String deviceId, String ip) async {
+                  print("✅ Device $deviceId added with IP $ip");
+                  Navigator.pop(context); // Close dialog after success
+                },
+              );
+            },
+            child: const Text("Connect"),
+          ),
+        ],
+      );
+    },
+  );
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,7 +64,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> devices = [];
     late UDPService _udpService; // ✅ Declare it here
-
+    
 
 @override
   void initState() {
@@ -24,6 +74,7 @@ class _HomePageState extends State<HomePage> {
     discoverDevices();  // ✅ Start discovery when page loads
 
   }
+
 
 
   /// ✅ **Discover devices via UDP**

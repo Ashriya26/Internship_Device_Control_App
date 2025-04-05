@@ -147,25 +147,7 @@ Future<void> _login() async {
                       ),
                     // ✅ Login Button
                     ElevatedButton(
-                      onPressed: _isButtonEnabled
-                          ? () async {
-                              final user = await DatabaseHelper.instance.getUser(
-                                _usernameController.text,
-                                _passwordController.text,
-                              );
-
-                              if (user != null) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const HomePage()),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text("Invalid username or password")),
-                                );
-                              }
-                            }
-                          : null,
+                      onPressed: _isButtonEnabled ? _login : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
                         padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),

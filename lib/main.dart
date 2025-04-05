@@ -45,10 +45,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.orange,
         fontFamily: 'Montserrat',
       ),
-      initialRoute: '/start', // Home Page is the default
+      initialRoute: '/start', // Start from animated splash screen
       routes: {
-        '/start' :(context) => const StartPage(),
-        '/login': (context)=> const LoginPage(),
+        '/start': (context) => const StartPage(),
+        '/login': (context) => const LoginPage(),
         '/': (context) => const HomePage(),
         '/settings': (context) => const SettingsPage(),
       },

@@ -3,6 +3,7 @@ import 'home_page.dart';
 import '../widgets/NetworkDetailsDialogue.dart';
 import 'package:provider/provider.dart';
 import '../providers/network_provider.dart';
+import '../services/database_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -60,22 +61,23 @@ class _SettingsPageState extends State<SettingsPage> {
         context: context,
         builder: (context) => NetworkDetailsDialogue(
           ssid: network["name"],
-          onConnect: (ssid, password) {
-            setState(() {
-              if (connectedNetwork != null) {
-                connectedNetwork!["connected"] = false;
-                availableNetworks.add(connectedNetwork!); // Move old network down
-              }
-              availableNetworks.remove(network);
-              network["connected"] = true;
-              connectedNetwork = network;
+          onConnect: (ssid, password) async {
+          // Save to DB
+          await DatabaseHelper.instance.saveWiFiCredentials(ssid, password);
 
-              // ✅ Update Provider with the new connected network name
-              Provider.of<NetworkProvider>(context, listen: false).updateNetwork(network["name"]);
-          
-            });
-          },
-        ),
+          setState(() {
+            if (connectedNetwork != null) {
+              connectedNetwork!["connected"] = false;
+              availableNetworks.add(connectedNetwork!);
+            }
+            availableNetworks.remove(network);
+            network["connected"] = true;
+            connectedNetwork = network;
+
+            Provider.of<NetworkProvider>(context, listen: false).updateNetwork(ssid);
+          });
+        }
+                ),
       );
     } else {
       setState(() {

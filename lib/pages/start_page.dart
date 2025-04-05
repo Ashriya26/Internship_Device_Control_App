@@ -53,10 +53,8 @@ class StartPage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   // Navigate to Login Page
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                  );
+                      _navigateToNextScreen(context); // ✅ THIS is the fix
+
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
