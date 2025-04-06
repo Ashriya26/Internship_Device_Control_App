@@ -6,6 +6,7 @@ import '../services/udp_service.dart';  // ✅ Import UDP Service
 import '../services/websocket_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/network_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 Future<void> getWiFiDetails(BuildContext context, WebSocketService ws, String ip) async {
@@ -18,6 +19,8 @@ Future<void> getWiFiDetails(BuildContext context, WebSocketService ws, String ip
       return AlertDialog(
         title: const Text("Enter Home WiFi Details"),
         content: Column(
+          mainAxisSize: MainAxisSize.min,
+
           children: [
             TextField(
               onChanged: (val) => ssid = val,
@@ -54,6 +57,8 @@ Future<void> getWiFiDetails(BuildContext context, WebSocketService ws, String ip
   );
 }
 
+
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -65,6 +70,7 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> devices = [];
     late UDPService _udpService; // ✅ Declare it here
     
+  
 
 @override
   void initState() {
@@ -75,7 +81,13 @@ class _HomePageState extends State<HomePage> {
 
   }
 
+  Future<void> _logout() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.clear(); // Clears login session
 
+  // Navigate to login screen using named route
+  Navigator.pushReplacementNamed(context, '/login');
+}
 
   /// ✅ **Discover devices via UDP**
   void discoverDevices() {
@@ -145,6 +157,35 @@ void updateDeviceStatus(String name, bool status) {
     },
     
     child: Scaffold(
+      drawer: Drawer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DrawerHeader(
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 235, 171, 75),
+                ),
+                child: const Center(
+                  child: Text(
+                    'Profile',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text("Logout"),
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  _logout(); // ✅ Calls the proper logout
+                },
+              ),
+            ],
+          ),
+        ),
       body: Stack(
         children: [
           // 🔹 Background Image
@@ -186,19 +227,24 @@ void updateDeviceStatus(String name, bool status) {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      GestureDetector(
-                        onTap: () {// 🔹 Logout and go back to login
-                          Navigator.pushReplacementNamed(context, '/login');
+                      // Profile Icon (opens drawer)
+                        Builder(
+                          builder: (context) {
+                            return GestureDetector(
+                              onTap: () {
+                                Scaffold.of(context).openDrawer();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Color.fromARGB(255, 235, 171, 75),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.person, color: Colors.white),
+                                ),
+                            );
                           },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Color.fromARGB(255, 235, 171, 75),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.person, color: Colors.white),
                         ),
-                      ),
                       const Text(
                         "IoT Device Manager",
                         style: TextStyle(
