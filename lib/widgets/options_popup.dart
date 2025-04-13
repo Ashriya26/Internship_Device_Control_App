@@ -147,6 +147,9 @@
 import 'package:flutter/material.dart';
 import '../services/database_service.dart';
 import '../services/mock_device_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/network_provider.dart';
+
 
 class OptionsPopup extends StatelessWidget {
   const OptionsPopup({super.key});
@@ -360,26 +363,7 @@ Future<void> _addDevice(BuildContext context) async {
                   const SizedBox(height: 10),
 
                   // ⚙️ Settings
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      leading: const Text(
-                        "Settings",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      trailing: const Icon(
-                        Icons.settings,
-                        color: Color.fromARGB(255, 235, 171, 75),
-                        size: 24,
-                      ),
-                      onTap: () {
-                        Navigator.pushNamed(context, '/settings');
-                      },
-                    ),
-                  ),
+                  
                 ],
               ),
             ),

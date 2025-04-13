@@ -6,6 +6,8 @@ import '../services/udp_service.dart';  // ✅ Import UDP Service
 import '../services/websocket_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/network_provider.dart';
+
+import "../pages/settings_page.dart";
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -175,6 +177,16 @@ void updateDeviceStatus(String name, bool status) {
                   ),
                 ),
               ),
+              ListTile(
+        leading: const Icon(Icons.settings),
+        title: const Text("WiFi Settings"),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SettingsPage()),
+          );
+    },
+      ),
               ListTile(
                 leading: const Icon(Icons.logout),
                 title: const Text("Logout"),
