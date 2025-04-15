@@ -71,7 +71,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> devices = [];
     late UDPService _udpService; // ✅ Declare it here
-    
+    bool showDeviceInfoPopup = true; // Flag to control the popup visibility
+
   
 
 @override
@@ -163,11 +164,11 @@ void updateDeviceStatus(String name, bool status) {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              DrawerHeader(
-                decoration: const BoxDecoration(
+              const DrawerHeader(
+                decoration: BoxDecoration(
                   color: Color.fromARGB(255, 235, 171, 75),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     'Profile',
                     style: TextStyle(
@@ -177,16 +178,19 @@ void updateDeviceStatus(String name, bool status) {
                   ),
                 ),
               ),
+              
+
               ListTile(
         leading: const Icon(Icons.settings),
         title: const Text("WiFi Settings"),
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => SettingsPage()),
+            MaterialPageRoute(builder: (context) => const SettingsPage()),
           );
-    },
-      ),
+            },
+              ),
+              const SizedBox(height:16),
               ListTile(
                 leading: const Icon(Icons.logout),
                 title: const Text("Logout"),
@@ -280,6 +284,7 @@ void updateDeviceStatus(String name, bool status) {
                   ),
                 ),
               ),
+              
 
               // 🔹 Device Grid
               Expanded(

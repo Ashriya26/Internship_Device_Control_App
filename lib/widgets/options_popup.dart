@@ -147,8 +147,6 @@
 import 'package:flutter/material.dart';
 import '../services/database_service.dart';
 import '../services/mock_device_service.dart';
-import 'package:provider/provider.dart';
-import '../providers/network_provider.dart';
 
 
 class OptionsPopup extends StatelessWidget {
@@ -217,28 +215,82 @@ Future<void> _addDevice(BuildContext context) async {
 
   // Step 1: Prompt to connect to ESP manually
   bool? proceed = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text("Connect to Device"),
-        content: const Text(
-          "Please go to your phone’s WiFi settings and connect to the device’s network (e.g., ET-XXXX).\n\n"
-          "Once you're connected, press Continue.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
+  context: context,
+  barrierDismissible: false,
+  builder: (context) {
+    return Dialog(
+  backgroundColor: Colors.transparent,
+  child: Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: const Color.fromARGB(255, 235, 171, 75),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Center(
+            child: Text(
+              "Connect to Device",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Continue"),
+          const SizedBox(height: 10),
+          const Text(
+            "Please go to your phone’s WiFi settings and connect to the device’s network (e.g., ET-XXXX).\n\nOnce you're connected, press Continue.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black87),
+          ),
+          const SizedBox(height: 20),
+
+          // 🔘 Buttons inside white box
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 223, 127, 24),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 223, 127, 24),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Continue"),
+              ),
+            ],
           ),
         ],
-      );
-    },
-  );
+      ),
+    ),
+  ),
+);
+
+  },
+);
 
   if (proceed != true) return;
 
