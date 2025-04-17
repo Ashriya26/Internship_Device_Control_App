@@ -218,19 +218,13 @@ Future<void> _addDevice(BuildContext context) async {
   context: context,
   barrierDismissible: false,
   builder: (context) {
-    return Dialog(
-  backgroundColor: Colors.transparent,
-  child: Container(
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      color: const Color.fromARGB(255, 235, 171, 75),
-      borderRadius: BorderRadius.circular(20),
-    ),
+   return Dialog(
+    backgroundColor: Colors.transparent,
     child: Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        color: const Color.fromARGB(255, 235, 171, 75), // 🔶 Orange box
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -241,25 +235,25 @@ Future<void> _addDevice(BuildContext context) async {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: Colors.white, // White text on orange background
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
           const Text(
             "Please go to your phone’s WiFi settings and connect to the device’s network (e.g., ET-XXXX).\n\nOnce you're connected, press Continue.",
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.black87),
+            style: TextStyle(color: Colors.white),
           ),
           const SizedBox(height: 20),
 
-          // 🔘 Buttons inside white box
+          // 🔘 Action buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 223, 127, 24),
+                  backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -271,7 +265,7 @@ Future<void> _addDevice(BuildContext context) async {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 223, 127, 24),
+                  backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -286,8 +280,8 @@ Future<void> _addDevice(BuildContext context) async {
         ],
       ),
     ),
-  ),
-);
+  );
+
 
   },
 );
