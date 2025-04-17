@@ -160,46 +160,113 @@ class OptionsPopup extends StatelessWidget {
     String password = "";
 
     TextEditingController deviceNameController = TextEditingController(text: deviceName);
+    TextEditingController ssidController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  
+return showDialog<Map<String, String>>(
+  context: context,
+  builder: (context) {
+    String localSsid = '';
+    String localPassword = '';
+    String errorMessage = '';
+    
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isButtonEnabled = localSsid.isNotEmpty && localPassword.isNotEmpty;
 
-    return showDialog<Map<String, String>>(
-      context: context,
-      builder: (context) {
         return AlertDialog(
-          title: const Text("Configure Wifi and Device"),
+          title: const Text(
+            "Configure Wifi and Device",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 10),
-            TextField(
-              controller: deviceNameController,
-              decoration: const InputDecoration(labelText: "Device Name (optional)"),
-            ),
+              TextField(
+                controller: deviceNameController,
+                decoration: const InputDecoration(labelText: "Device Name (optional)"),
+              ),
               TextField(
                 decoration: const InputDecoration(labelText: "WiFi SSID"),
-                onChanged: (value) => ssid = value,
+                onChanged: (value) {
+                  setState(() {
+                    localSsid = value;
+                    errorMessage = '';
+                  });
+                },
               ),
               TextField(
                 decoration: const InputDecoration(labelText: "WiFi Password"),
                 obscureText: true,
-                onChanged: (value) => password = value,
+                onChanged: (value) {
+                  setState(() {
+                    localPassword = value;
+                    errorMessage = '';
+                  });
+                },
               ),
+              if (errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
             ],
           ),
+          actionsAlignment: MainAxisAlignment.center,
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 235, 171, 75),
+              ),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context, {"device_name": deviceNameController.text,"ssid": ssid, "password": password});
-              },
-              child: const Text("Connect"),
+            const SizedBox(width: 10),
+            ElevatedButton(
+              onPressed: isButtonEnabled
+                  ? () {
+                      if (localSsid.isEmpty || localPassword.isEmpty) {
+                        setState(() {
+                          errorMessage = "Please enter both SSID and Password";
+                        });
+                      } else {
+                        Navigator.pop(context, {
+                          "device_name": deviceNameController.text,
+                          "ssid": localSsid,
+                          "password": localPassword
+                        });
+                      }
+                    }
+                  : null, // 🔒 Disabled if fields are empty
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isButtonEnabled
+                    ? Color.fromARGB(255, 235, 171, 75)
+                    : Colors.grey,
+              ),
+              child: const Text(
+                "Connect",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
       },
     );
+  },
+);
+  
+
   }
 
   /// 🔹 Auto-generate device name based on existing entries
@@ -289,21 +356,55 @@ Future<void> _addDevice(BuildContext context) async {
   if (proceed != true) return;
 
   // Step 2: Show loading while simulating ESP connection
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => const AlertDialog(
-      title: Text("Connecting..."),
-      content: Column(
+showDialog(
+  context: context,
+  barrierDismissible: false,
+  builder: (context) => Dialog(
+    backgroundColor: Colors.transparent,
+    child: Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 255, 255, 255), // 🔶 Orange box
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(),
+        children: const [
+          Text(
+            "Connecting...",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color.fromARGB(255, 0, 0, 0), // 🔶 Orange box
+            ),
+          ),
           SizedBox(height: 20),
-          Text("Connecting to ESP Access Point..."),
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(
+              strokeWidth: 4,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Color.fromARGB(255, 237, 140, 14), // 🟠 Spinner in dark orange
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+          Text(
+            "Connecting to ESP Access Point...",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color.fromARGB(255, 0, 0, 0), // 🔶 Orange box
+              fontSize: 16,
+            ),
+          ),
         ],
       ),
     ),
-  );
+  ),
+);
+
 
   await Future.delayed(const Duration(seconds: 2)); // Simulate real wait
   await mock.connectToESP();
@@ -317,22 +418,51 @@ Future<void> _addDevice(BuildContext context) async {
   String password = credentials["password"]!;
   String deviceName = credentials["device_name"] ?? await _generateDeviceName();
 
+  
   // Step 4: Show progress again
+// Step 4: Show "Configuring WiFi" dialog
   showDialog(
     context: context,
     barrierDismissible: false,
-    builder: (context) => const AlertDialog(
-      title: Text("Sending WiFi Credentials..."),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 20),
-          Text("Sending details to device..."),
-        ],
+    builder: (context) => Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Text(
+              "Configuring WiFi...",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 20),
+            CircularProgressIndicator(
+              strokeWidth: 4,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Color.fromARGB(255, 237, 140, 14),
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              "Sending SSID and Password...",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black),
+            ),
+          ],
+        ),
       ),
     ),
   );
+
 
   final response = await mock.sendWiFiDetails(ssid, password);
   Navigator.pop(context); // Close progress
