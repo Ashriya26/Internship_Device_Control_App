@@ -142,13 +142,21 @@ void updateDeviceStatus(String name, bool status) {
     });
   }
 
+  // Function to load devices (fetch from the mock database or service)
+  void loadDevices() {
+    setState(() {
+      devices = [];  // Clear the list (replace with real data from a DB)
+    });
+  }
+
   void showAddOptions(BuildContext context) {
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
-        return const OptionsPopup();
-      },
+      return OptionsPopup(
+        onDeviceAdded: loadDevices, // 🛎️ Pass the refresh function here
+      );      },
     );
   }
 
