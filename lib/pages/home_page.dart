@@ -6,7 +6,7 @@ import '../services/udp_service.dart';  // ✅ Import UDP Service
 import '../services/websocket_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/network_provider.dart';
-
+import '../services/database_service.dart';
 import "../pages/settings_page.dart";
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -78,11 +78,22 @@ class _HomePageState extends State<HomePage> {
 @override
   void initState() {
     super.initState();
+    loadDevices(); // load devices initially
     _udpService = UDPService(); // Initialize it
 
     discoverDevices();  // ✅ Start discovery when page loads
 
   }
+
+  void loadDevices() async {
+  devices = await DatabaseHelper.instance.getAllDevices();
+  setState(() {});
+}
+  // ✅ This function will be passed to OptionsPopup
+void refreshDevices() async {
+  devices = await DatabaseHelper.instance.getAllDevices();
+  setState(() {});
+}
 
   Future<void> _logout() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -102,7 +113,7 @@ class _HomePageState extends State<HomePage> {
           devices.add({
             "id": id,
             "name": "Device-$id",
-            "status": false,
+            "status": 0,
             "ip": ip,  // ✅ Store IP
             "model": "Unknown",
             "firmware": "Unknown",
@@ -143,11 +154,7 @@ void updateDeviceStatus(String name, bool status) {
   }
 
   // Function to load devices (fetch from the mock database or service)
-  void loadDevices() {
-    setState(() {
-      devices = [];  // Clear the list (replace with real data from a DB)
-    });
-  }
+  
 
   void showAddOptions(BuildContext context) {
     showDialog(
@@ -155,7 +162,7 @@ void updateDeviceStatus(String name, bool status) {
       barrierDismissible: true,
       builder: (BuildContext context) {
       return OptionsPopup(
-        onDeviceAdded: loadDevices, // 🛎️ Pass the refresh function here
+        onDeviceAdded: refreshDevices, // ✅ Pass callback here
       );      },
     );
   }
@@ -307,21 +314,41 @@ void updateDeviceStatus(String name, bool status) {
                     ),
                     itemCount: devices.length,
                     itemBuilder: (context, index) {
+                      final device = devices[index];
+
+                      // 1️⃣ First try the TEXT device_id, else fallback to PK.toString()
+                      final id = (device['device_id'] as String?) 
+                                  ?? (device['id']?.toString() ?? '');
+
+                      // 2️⃣ Build a name: use your in‐memory 'name' if set, otherwise "Device-$id"
+                      final name = (device['device_name'] as String?) 
+                                    ?? 'Device-$id';
+
+                      // 3️⃣ Status was a bool? in your map, so default it to false
+                      final status = ((device['status'] as int?) ?? 0) == 1;
+
+                      // 4️⃣ Everything else you had already defaulted correctly:
+                      final model      = (device['model']     as String?) ?? 'Unknown';
+                      final firmware   = (device['firmware']  as String?) ?? 'Unknown';
+                      final lastActive = (device['lastActive']as String?) ?? 'Just Now';
                       return DeviceCard(
-                        name: devices[index]["name"],
-                        isOn: devices[index]["status"],
-                        isConnected: devices[index]["status"],
+                         name: name,
+                          isOn: status,
+                          isConnected: status,
                         onTap: () async {
                           final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => DeviceControlPage(
-                                deviceName: devices[index]["name"],
-                                initialStatus: devices[index]["status"],
-                                networkName: "WiFi XYZ",
-                                deviceModel: devices[index]["model"],
-                                firmwareVersion: devices[index]["firmware"],
-                                lastActiveTime: devices[index]["lastActive"],
+                              builder: (_) => DeviceControlPage(
+                                deviceId:      id,                // ← new
+
+                                deviceName:    name,
+                                initialStatus: status,
+                                networkName:   "WiFi XYZ",
+                                deviceModel:   model,
+                                firmwareVersion: firmware,
+                                lastActiveTime:  lastActive,
+                                
                                 onDeleteDevice: (deviceName) {
                                   String deviceIdToDelete = devices[index]["id"];
                                   deleteDevice(deviceIdToDelete);
@@ -333,28 +360,25 @@ void updateDeviceStatus(String name, bool status) {
                                 /// ✅ Pass `onToggleDevice` to update in real-time
                                 onToggleDevice: (newStatus) {
                                   setState(() {
-                                    devices[index]["status"] = newStatus;
+                                    devices[index]["status"] = newStatus?1:0;
                                   });
                                 },
                               ),
                             ),
-                          );
-
-                          // ✅ Fix: Check if the device still exists before updating
-                          if (result is bool) {
+                          );// if result is a bool, update your list and UI:
+                          if (result != null) {
                             setState(() {
-                              int updatedIndex = devices.indexWhere((device) => device["id"] == devices[index]["id"]);
-                              if (updatedIndex != -1) {
-                                devices[updatedIndex]["status"] = result;
-                              }
+                              devices[index]['status'] = result ? 1 : 0;
                             });
                           }
+                          
                         },
                         /// ✅ **Fix: Add `onToggleDevice` here too**
                         onToggleDevice: (newStatus) {
                           setState(() {
                             devices[index]["status"] = newStatus;
                           });
+                          
                         },
                       );
                     },
@@ -368,4 +392,4 @@ void updateDeviceStatus(String name, bool status) {
     ),
     );
   }
-}
+}  

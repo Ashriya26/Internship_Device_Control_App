@@ -4,8 +4,10 @@ import '../widgets/edit_device.dart';
 import 'home_page.dart';
 import 'package:provider/provider.dart';
 import '../providers/network_provider.dart';
+import '../services/database_service.dart';
 
 class DeviceControlPage extends StatefulWidget {
+  final String deviceId;
   final String deviceName;
   final bool initialStatus;
   final String networkName;
@@ -18,6 +20,7 @@ class DeviceControlPage extends StatefulWidget {
 
   const DeviceControlPage({
     super.key,
+    required this.deviceId,
     required this.deviceName,
     required this.initialStatus,
     required this.networkName,
@@ -25,7 +28,6 @@ class DeviceControlPage extends StatefulWidget {
     required this.firmwareVersion,
     required this.lastActiveTime,
     required this.onNameUpdated, // ✅ Initialize
-
     this.onDeleteDevice, // Callback added
     required this.onToggleDevice, // ✅ Initialize it
   });
@@ -37,68 +39,56 @@ class DeviceControlPage extends StatefulWidget {
 class _DeviceControlPageState extends State<DeviceControlPage> {
   late String deviceName;
   late bool isDeviceOn;
-  late bool deviceStatus;
 
   @override
   void initState() {
     super.initState();
     deviceName = widget.deviceName;
-    isDeviceOn = widget.initialStatus;
-    deviceStatus=widget.initialStatus;
-    
+    isDeviceOn = widget.initialStatus  ;
+  // Ensure the device starts in OFF state by default
   }
 
+  Future<void> _toggleDevice() async {
+    setState(() => isDeviceOn = !isDeviceOn);
+    await DatabaseHelper.instance.updateDeviceStatus(widget.deviceId, isDeviceOn);
 
+    // inform HomePage via callback (optional)…
+    widget.onToggleDevice(isDeviceOn);
 
-
-void toggleDevice() {
-  setState(() {
-    isDeviceOn = !isDeviceOn; // Toggle the state
-  });
-
-  if (deviceName.isNotEmpty) {
-    widget.onToggleDevice(isDeviceOn); // ✅ Notify Home Page
-    updateDeviceStatus(deviceName, isDeviceOn);
-    Navigator.pop(context, isDeviceOn); // ✅ Go back to Home Page
+    // then pop and return the new status
+    Navigator.pop(context, isDeviceOn);
   }
-}
 
-void updateDeviceStatus(String deviceName, bool newStatus) {
-  print("Updating $deviceName status to ${newStatus ? "ON" : "OFF"}");
-}
-
-
-
-
+ 
+  
 
   void _showDeletePopup() {
-  showDialog(
-    context: context,
-    barrierDismissible: true, // Allow closing by tapping outside
-    builder: (BuildContext context) {
-      return DeleteDevicePopup(
-        onDelete: () {
-          if (widget.onDeleteDevice != null) {
-            widget.onDeleteDevice!(widget.deviceName); // Notify Home Page
-          }
-          Navigator.pop(context); // Close the popup
-          
-          // Ensure redirection to Home Page after deletion
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const HomePage()), // Ensure this is your actual Home Page widget
-                (route) => false, // Remove all previous routes
-              );
+    showDialog(
+      context: context,
+      barrierDismissible: true, // Allow closing by tapping outside
+      builder: (BuildContext context) {
+        return DeleteDevicePopup(
+          onDelete: () {
+            if (widget.onDeleteDevice != null) {
+              widget.onDeleteDevice!(widget.deviceName); // Notify Home Page
             }
-          });
-        },
-      );
-    },
-  );
-}
+            Navigator.pop(context); // Close the popup
 
+            // Ensure redirection to Home Page after deletion
+            Future.delayed(const Duration(milliseconds: 300), () {
+              if (mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomePage()), // Ensure this is your actual Home Page widget
+                  (route) => false, // Remove all previous routes
+                );
+              }
+            });
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +109,6 @@ void updateDeviceStatus(String deviceName, bool newStatus) {
               ),
             ),
           ),
-
           Column(
             children: [
               // AppBar (Matching Home Page)
@@ -214,7 +203,6 @@ void updateDeviceStatus(String deviceName, bool newStatus) {
                               deviceName = newName; // Update UI when name changes
                             });
                             widget.onNameUpdated(newName); // ✅ Notify Home Page
-
                           },
                         ),
                       ],
@@ -223,33 +211,31 @@ void updateDeviceStatus(String deviceName, bool newStatus) {
                     const SizedBox(height: 25),
 
                     // Device Info
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, // Keep left alignment
-                        children: [
-                          // Connected to (Left-aligned)
-                          const Text(
-                            "Connected to:",
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Connected to (Left-aligned)
+                        const Text(
+                          "Connected to:",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 4), // Small space before network name
+
+                        // Network Name (Centered)
+                        Align(
+                          alignment: Alignment.center, // Center-align only the network name
+                          child: Text(
+                            Provider.of<NetworkProvider>(context).connectedNetwork,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 169, 203, 75)),
                           ),
-                          
-                          const SizedBox(height: 4), // Small space before network name
+                        ),
+                        const SizedBox(height: 15), // Space before the next fields
 
-                          // Network Name (Centered)
-                          Align(
-                            alignment: Alignment.center, // Center-align only the network name
-                            child: Text(
-                              Provider.of<NetworkProvider>(context).connectedNetwork,
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 169, 203, 75)),
-                            ),
-                          ),
-
-                          const SizedBox(height: 15), // Space before the next fields
-
-                          _buildDeviceInfo("Device Model:", widget.deviceModel),
-                          _buildDeviceInfo("Firmware Version:", widget.firmwareVersion),
-                          _buildDeviceInfo("Last Active:", widget.lastActiveTime),
-                        ],
-                      ),
+                        _buildDeviceInfo("Device Model:", widget.deviceModel),
+                        _buildDeviceInfo("Firmware Version:", widget.firmwareVersion),
+                        _buildDeviceInfo("Last Active:", widget.lastActiveTime),
+                      ],
+                    ),
                     const SizedBox(height: 30),
 
                     // Status Indicator with Heading
@@ -281,12 +267,12 @@ void updateDeviceStatus(String deviceName, bool newStatus) {
 
               // Toggle Button (ON/OFF)
               GestureDetector(
-                onTap: toggleDevice,
+                onTap: _toggleDevice,
                 child: Container(
                   width: MediaQuery.of(context).size.width * 0.85,
                   padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
                   decoration: BoxDecoration(
-                     color: Colors.white,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(50),
                     boxShadow: const [
                       BoxShadow(color: Colors.black26, blurRadius: 8),
@@ -346,4 +332,4 @@ void updateDeviceStatus(String deviceName, bool newStatus) {
       ),
     );
   }
-}
+}  
