@@ -85,15 +85,22 @@ class _HomePageState extends State<HomePage> {
 
   }
 
-  void loadDevices() async {
-  devices = await DatabaseHelper.instance.getAllDevices();
+ Future<void> loadDevices() async {
+  final raw = await DatabaseHelper.instance.getAllDevices();
+  devices = raw.map((d) => {
+    'id':          (d['device_id'] as String?) ?? d['id'].toString(),
+    'device_name': (d['device_name'] as String?) ?? 'Device-${d['device_id'] ?? d['id']}',
+    // **Convert int → bool here:**
+    'status':      (d['status'] as int? ?? 0) == 1,
+    'ip':          d['ip']    as String? ?? '',
+    'model':       d['type']  as String? ?? 'Unknown',
+    'firmware':    d['firmware'] as String? ?? 'Unknown',
+    'lastActive':  d['lastActive'] as String? ?? 'Just Now',
+  }).toList();
   setState(() {});
 }
-  // ✅ This function will be passed to OptionsPopup
-void refreshDevices() async {
-  devices = await DatabaseHelper.instance.getAllDevices();
-  setState(() {});
-}
+
+Future<void> refreshDevices() => loadDevices();
 
   Future<void> _logout() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -325,62 +332,52 @@ void updateDeviceStatus(String name, bool status) {
                                     ?? 'Device-$id';
 
                       // 3️⃣ Status was a bool? in your map, so default it to false
-                      final status = ((device['status'] as int?) ?? 0) == 1;
+                      final status = device['status'] as bool;
 
                       // 4️⃣ Everything else you had already defaulted correctly:
                       final model      = (device['model']     as String?) ?? 'Unknown';
                       final firmware   = (device['firmware']  as String?) ?? 'Unknown';
                       final lastActive = (device['lastActive']as String?) ?? 'Just Now';
                       return DeviceCard(
-                         name: name,
-                          isOn: status,
-                          isConnected: status,
+                        name:        name,
+                        isOn:        status,
+                        isConnected: status,
                         onTap: () async {
-                          final result = await Navigator.push(
+                          // 1) push control page, wait for returned bool
+                          final bool? newStatus = await Navigator.push<bool>(
                             context,
                             MaterialPageRoute(
                               builder: (_) => DeviceControlPage(
-                                deviceId:      id,                // ← new
-
+                                deviceId:      id,
                                 deviceName:    name,
                                 initialStatus: status,
                                 networkName:   "WiFi XYZ",
                                 deviceModel:   model,
                                 firmwareVersion: firmware,
                                 lastActiveTime:  lastActive,
-                                
-                                onDeleteDevice: (deviceName) {
-                                  String deviceIdToDelete = devices[index]["id"];
-                                  deleteDevice(deviceIdToDelete);
-                                },
-                                /// ✅ **Pass `onNameUpdated` to update Home Page**
-                                onNameUpdated: (newName) {
-                                  updateDeviceName(devices[index]["id"], newName);
-                                },
-                                /// ✅ Pass `onToggleDevice` to update in real-time
-                                onToggleDevice: (newStatus) {
-                                  setState(() {
-                                    devices[index]["status"] = newStatus?1:0;
-                                  });
-                                },
+                                onDeleteDevice: (dn) { deleteDevice(id); },
+                                onNameUpdated:  (newName) => updateDeviceName(id, newName),
+                                onToggleDevice: (_){},// you can safely leave this empty now
                               ),
                             ),
-                          );// if result is a bool, update your list and UI:
-                          if (result != null) {
+                          );
+
+                          // 2) if user toggled, rebuild only that card
+                          if (newStatus != null) {
                             setState(() {
-                              devices[index]['status'] = result ? 1 : 0;
+                              devices[index]['status'] = newStatus ;
                             });
                           }
-                          
                         },
-                        /// ✅ **Fix: Add `onToggleDevice` here too**
-                        onToggleDevice: (newStatus) {
-                          setState(() {
-                            devices[index]["status"] = newStatus;
-                          });
-                          
+                        // 2) Satisfy the other required callback
+                        onToggleDevice: (_) {
+                          // optional: if you ever want a quick-tap-on-card to toggle,
+                          // you can call the same flow here. For now, leave it empty.
                         },
+                        // no onToggleDevice callback needed here any more
                       );
+
+                      
                     },
                   ),
                 ),

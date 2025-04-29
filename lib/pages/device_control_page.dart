@@ -135,7 +135,7 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap: () => Navigator.pop(context, false),
+                        onTap: () => Navigator.pop(context),
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: const BoxDecoration(

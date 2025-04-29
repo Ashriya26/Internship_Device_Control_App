@@ -122,7 +122,7 @@ class DatabaseHelper {
   String? ip,
   String? type,
   String? deviceName,          // ← new
-  bool   online = true,  // ← new
+  bool   online = false,  // ← new
 }) async {
   final db = await database;
   await db.insert(
@@ -134,7 +134,7 @@ class DatabaseHelper {
       'ip':          ip,
       'type':        type,
       'device_name': deviceName ?? '',           // store the user’s name
-      'status':      online ? 1 : 0,       // 1 = online, 0 = offline
+      'status':      0,       // 1 = online, 0 = offline
 
     },
     conflictAlgorithm: ConflictAlgorithm.replace,
