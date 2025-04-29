@@ -156,7 +156,7 @@ class DatabaseHelper {
   }
 
   /// Deletes a device row by its device_id.
-  Future<int> deleteDevice(String deviceId) async {
+    Future<int> deleteDevice(String deviceId) async {
     final db = await database;
     return await db.delete(
       'devices',
@@ -164,6 +164,7 @@ class DatabaseHelper {
       whereArgs: [deviceId],
     );
   }
+
 
   Future<void> saveWiFiCredentials(String ssid, String password) async {
     final db = await database;

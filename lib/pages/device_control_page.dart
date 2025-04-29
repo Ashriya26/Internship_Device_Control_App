@@ -62,25 +62,30 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
  
   
 
-  void _showDeletePopup() {
+    void _showDeletePopup() {
     showDialog(
       context: context,
-      barrierDismissible: true, // Allow closing by tapping outside
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return DeleteDevicePopup(
-          onDelete: () {
-            if (widget.onDeleteDevice != null) {
-              widget.onDeleteDevice!(widget.deviceName); // Notify Home Page
-            }
-            Navigator.pop(context); // Close the popup
+          onDelete: () async {
+            // 1. Delete from database
+            await DatabaseHelper.instance.deleteDevice(widget.deviceId);
 
-            // Ensure redirection to Home Page after deletion
+            // 2. Notify Home Page (optional if you're also clearing it from UI)
+            if (widget.onDeleteDevice != null) {
+              widget.onDeleteDevice!(widget.deviceId); // use deviceId instead of name
+            }
+
+            Navigator.pop(context); // Close popup
+
+            // 3. Redirect to HomePage
             Future.delayed(const Duration(milliseconds: 300), () {
               if (mounted) {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => const HomePage()), // Ensure this is your actual Home Page widget
-                  (route) => false, // Remove all previous routes
+                  MaterialPageRoute(builder: (context) => const HomePage()),
+                  (route) => false,
                 );
               }
             });
