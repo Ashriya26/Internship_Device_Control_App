@@ -154,7 +154,7 @@ import '../services/mock_device_service.dart';
 
 
 class OptionsPopup extends StatelessWidget {
-  const OptionsPopup({Key? key, required this.onDeviceAdded}) : super(key: key); // 🛎️ And update constructor
+  const OptionsPopup({super.key, required this.onDeviceAdded}); // 🛎️ And update constructor
   final VoidCallback? onDeviceAdded; // ✅ Add this line
   
   /// 🔹 Show dialog to get WiFi credentials from user
@@ -237,7 +237,7 @@ TextField(
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 235, 171, 75),
+                backgroundColor: const Color.fromARGB(255, 235, 171, 75),
               ),
               child: const Text(
                 "Cancel",
@@ -263,7 +263,7 @@ TextField(
                   : null, // 🔒 Disabled if fields are empty
               style: ElevatedButton.styleFrom(
                 backgroundColor: isButtonEnabled
-                    ? Color.fromARGB(255, 235, 171, 75)
+                    ? const Color.fromARGB(255, 235, 171, 75)
                     : Colors.grey,
               ),
               child: const Text(
@@ -383,9 +383,9 @@ showDialog(
         color: const Color.fromARGB(255, 255, 255, 255), // 🔶 Orange box
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
+      child: const Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
+        children: [
           Text(
             "Connecting...",
             textAlign: TextAlign.center,
@@ -453,9 +453,9 @@ showDialog(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Column(
+        child: const Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Text(
               "Configuring WiFi...",
               textAlign: TextAlign.center,

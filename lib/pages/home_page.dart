@@ -4,8 +4,6 @@ import '../widgets/options_popup.dart';
 import 'device_control_page.dart';
 import '../services/udp_service.dart';  // ✅ Import UDP Service
 import '../services/websocket_service.dart';
-import 'package:provider/provider.dart';
-import '../providers/network_provider.dart';
 import '../services/database_service.dart';
 import "../pages/settings_page.dart";
 import 'package:shared_preferences/shared_preferences.dart';
@@ -141,24 +139,22 @@ void updateDeviceStatus(String name, bool status) {
   });
 }
   /// ✅ **Function to update device name**
-  void updateDeviceName(String deviceId, String newName) {
-    setState(() {
-      int index = devices.indexWhere((device) => device["id"] == deviceId);
-      if (index != -1) {
-        devices[index]["name"] = newName;
-      }
-    });
-  }
+  Future<void> updateDeviceName(String deviceId, String newName) async {
+  await DatabaseHelper.instance.updateDeviceName(deviceId, newName);
+  setState(() {
+    final idx = devices.indexWhere((d) => d['id'] == deviceId);
+    if (idx != -1) devices[idx]['device_name'] = newName;
+  });
+}
 
 
-  void deleteDevice(String deviceId) {
-    setState(() {
-      int indexToDelete = devices.indexWhere((device) => device["id"] == deviceId);
-      if (indexToDelete != -1) {
-        devices.removeAt(indexToDelete);
-      }
-    });
-  }
+
+Future<void> deleteDevice(String deviceId) async {
+  await DatabaseHelper.instance.deleteDevice(deviceId);
+  setState(() {
+    devices.removeWhere((d) => d['id'] == deviceId);
+  });
+}
 
   // Function to load devices (fetch from the mock database or service)
   
@@ -355,8 +351,12 @@ void updateDeviceStatus(String name, bool status) {
                                 deviceModel:   model,
                                 firmwareVersion: firmware,
                                 lastActiveTime:  lastActive,
-                                onDeleteDevice: (dn) { deleteDevice(id); },
-                                onNameUpdated:  (newName) => updateDeviceName(id, newName),
+                                onDeleteDevice: (deletedId) => deleteDevice(deletedId),
+                                
+                                onNameUpdated: (newName) {
+                                  // This is your HomePage helper:
+                                  updateDeviceName(id, newName);
+                                },
                                 onToggleDevice: (_){},// you can safely leave this empty now
                               ),
                             ),

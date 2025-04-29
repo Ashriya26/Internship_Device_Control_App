@@ -198,11 +198,14 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                         ),
                         EditDeviceWidget(
                           initialName: deviceName,
-                          onNameUpdated: (newName) {
-                            setState(() {
-                              deviceName = newName; // Update UI when name changes
-                            });
-                            widget.onNameUpdated(newName); // ✅ Notify Home Page
+                          onNameUpdated: (newName) async {
+                            setState(() => deviceName = newName);
+
+                            // 1) Persist into SQLite
+                            await DatabaseHelper.instance.updateDeviceName(widget.deviceId, newName);
+
+                            // 2) Tell HomePage to update its list (and repaint)
+                            widget.onNameUpdated(newName);
                           },
                         ),
                       ],

@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 class MockDeviceService {
   /// Simulates connection to ESP Access Point
