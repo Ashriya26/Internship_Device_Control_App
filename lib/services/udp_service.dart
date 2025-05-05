@@ -24,7 +24,7 @@ class UDPService {
 
       // ✅ Set a timeout to wait for responses (3 seconds)
       Completer<void> completer = Completer();
-      Timer(const Duration(seconds: 3), () {
+      Timer(const Duration(seconds: 10), () {
         if (!completer.isCompleted) {
           print("❌ No devices found within timeout.");
           completer.complete();

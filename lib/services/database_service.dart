@@ -124,6 +124,21 @@ class DatabaseHelper {
     bool online = false, // ← new
   }) async {
     final db = await database;
+
+    // Check if device already exists in the database
+  final existingDevice = await db.query(
+    'devices',
+    where: 'device_id = ?',
+    whereArgs: [deviceId],
+  );
+
+  if (existingDevice.isNotEmpty) {
+    print("⚠️ Device with ID '$deviceId' already exists in the database.");
+    return; // Don't insert the device again
+  }
+
+  // Insert the device into the database
+    
     await db.insert(
       'devices',
       {
@@ -135,9 +150,16 @@ class DatabaseHelper {
         'device_name': deviceName ?? '', // store the user’s name
         'status': 0, // 1 = online, 0 = offline
       },
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.ignore,
     );
     print("✅ Device Saved!");
+
+    // 🔍 DEBUG: Check contents of the database
+  final devices = await db.query('devices');
+  print("📦 Devices in DB:");
+  for (var device in devices) {
+    print(device);
+  }
   }
 
   Future<List<Map<String, dynamic>>> getAllDevices() async {
@@ -158,13 +180,25 @@ class DatabaseHelper {
   /// Deletes a device row by its device_id.
     Future<int> deleteDevice(String deviceId) async {
     final db = await database;
-    return await db.delete(
+    try {
+    int result = await db.delete(
       'devices',
       where: 'device_id = ?',
       whereArgs: [deviceId],
     );
-  }
 
+    if (result > 0) {
+      print("🗑️ Device with ID '$deviceId' deleted from database.");
+    } else {
+      print("⚠️ No device found with ID '$deviceId'. Nothing was deleted.");
+    }
+
+    return result;
+  } catch (e) {
+    print("❌ Error while deleting device: $e");
+    return 0;
+  }
+}
 
   Future<void> saveWiFiCredentials(String ssid, String password) async {
     final db = await database;

@@ -292,6 +292,13 @@ Future<void> _addDevice(BuildContext context) async {
   final db = DatabaseHelper.instance;
   final mock = MockDeviceService();
 
+
+
+  MockDeviceService mockDevice = MockDeviceService(); // NEW instance each time
+Map<String, dynamic> deviceInfo = await mockDevice.connect();
+
+
+
   // Step 1: Prompt to connect to ESP manually
   bool? proceed = await showDialog<bool>(
   context: context,

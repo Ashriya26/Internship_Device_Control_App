@@ -83,7 +83,17 @@ class _HomePageState extends State<HomePage> {
 
   }
 
- Future<void> loadDevices() async {
+
+
+  Future<void> _logout() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.clear(); // Clears login session
+
+  // Navigate to login screen using named route
+  Navigator.pushReplacementNamed(context, '/login');
+}
+
+   Future<void> loadDevices() async {
   final raw = await DatabaseHelper.instance.getAllDevices();
   devices = raw.map((d) => {
     'id':          (d['device_id'] as String?) ?? d['id'].toString(),
@@ -100,13 +110,6 @@ class _HomePageState extends State<HomePage> {
 
 Future<void> refreshDevices() => loadDevices();
 
-  Future<void> _logout() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.clear(); // Clears login session
-
-  // Navigate to login screen using named route
-  Navigator.pushReplacementNamed(context, '/login');
-}
 
   /// ✅ **Discover devices via UDP**
   void discoverDevices() {
@@ -124,10 +127,18 @@ Future<void> refreshDevices() => loadDevices();
             "firmware": "Unknown",
             "lastActive": "Just Now",
           });
+          print("Device added: $id");
+            } else {
+              print("Device already exists: $id");
+  
         }
       });
     });
   }
+
+
+
+
 void updateDeviceStatus(String name, bool status) {
   setState(() {
     devices = devices.map((device) {
