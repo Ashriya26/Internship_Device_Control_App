@@ -101,7 +101,7 @@ class _HomePageState extends State<HomePage> {
     // **Convert int → bool here:**
     'status':      (d['status'] as int? ?? 0) == 1,
     'ip':          d['ip']    as String? ?? '',
-    'model':       d['type']  as String? ?? 'Unknown',
+    'model':       d['device_type']  as String? ?? 'Unknown',
     'firmware':    d['firmware'] as String? ?? 'Unknown',
     'lastActive':  d['lastActive'] as String? ?? 'Just Now',
   }).toList();
@@ -113,7 +113,7 @@ Future<void> refreshDevices() => loadDevices();
 
   /// ✅ **Discover devices via UDP**
   void discoverDevices() {
-    _udpService.discoverDevices((String id, String ip) {
+    _udpService.discoverMockDevices((String id, String ip,String model, String firmware, String lastActive) {
       setState(() {
         // ✅ Check if the device already exists
         bool exists = devices.any((device) => device["id"] == id);
@@ -123,9 +123,10 @@ Future<void> refreshDevices() => loadDevices();
             "name": "Device-$id",
             "status": 0,
             "ip": ip,  // ✅ Store IP
-            "model": "Unknown",
-            "firmware": "Unknown",
-            "lastActive": "Just Now",
+            "model": model.isNotEmpty ? model : "Unknown",
+            "firmware": firmware.isNotEmpty ? firmware : "Unknown",
+            "lastActive": lastActive.isNotEmpty ? lastActive : "Just Now",
+       
           });
           print("Device added: $id");
             } else {

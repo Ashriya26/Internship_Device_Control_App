@@ -501,7 +501,7 @@ showDialog(
       ssid,
       password,
       ip: response["ip"],
-      type: "switch",
+      type: response["device_type"],
       deviceName: credentials["device_name"],  // ← the name the user typed
       online: false,                      // ← mark it “online” by default
     );

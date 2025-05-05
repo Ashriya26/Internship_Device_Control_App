@@ -5,6 +5,7 @@ import 'home_page.dart';
 import 'package:provider/provider.dart';
 import '../providers/network_provider.dart';
 import '../services/database_service.dart';
+import '../services/mock_device_service.dart';
 
 class DeviceControlPage extends StatefulWidget {
   final String deviceId;
@@ -39,13 +40,24 @@ class DeviceControlPage extends StatefulWidget {
 class _DeviceControlPageState extends State<DeviceControlPage> {
   late String deviceName;
   late bool isDeviceOn;
+  late String deviceModel;
+  late String firmwareVersion;
+  late String lastActiveTime;
+  late MockDeviceService _mockDeviceService;
 
   @override
   void initState() {
     super.initState();
     deviceName = widget.deviceName;
+    _mockDeviceService = MockDeviceService();
+
     isDeviceOn = widget.initialStatus  ;
   // Ensure the device starts in OFF state by default
+
+  // Use the mock data passed into the constructor
+    deviceModel = widget.deviceModel;
+    firmwareVersion = widget.firmwareVersion;
+    lastActiveTime = widget.lastActiveTime;
   }
 
   Future<void> _toggleDevice() async {
@@ -58,6 +70,29 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
     // then pop and return the new status
     Navigator.pop(context, isDeviceOn);
   }
+  Future<void> _updateDeviceInfo(Map<String, dynamic> response) async {
+  // Assuming response["device_type"] exists and should be reflected in the UI
+  setState(() {
+    deviceModel = response["device_type"];
+  });
+  Future<void> _fetchDeviceData() async {
+  // Simulating a response from the mock device or network call
+  Map<String, dynamic> response = {
+    'device_type': 'MockDeviceModel', // This will be the new model you want to set
+  };
+
+  // Update the device model with the new data
+  _updateDeviceInfo(response);  // This will update the device model
+}
+Future<void> discoverDevice() async {
+    // Call the mock device service to discover the device
+    Map<String, dynamic> deviceData = await _mockDeviceService.connect();
+    setState(() {
+      // Use the device data to update UI
+      print("Device discovered: ${deviceData['device_id']}");
+    });
+  }
+}
 
  
   
@@ -242,6 +277,7 @@ class _DeviceControlPageState extends State<DeviceControlPage> {
                         _buildDeviceInfo("Device Model:", widget.deviceModel),
                         _buildDeviceInfo("Firmware Version:", widget.firmwareVersion),
                         _buildDeviceInfo("Last Active:", widget.lastActiveTime),
+                        
                       ],
                     ),
                     const SizedBox(height: 30),

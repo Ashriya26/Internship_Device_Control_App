@@ -60,5 +60,10 @@ class UDPService {
       print("❌ Error in UDP Discovery: $e");
     }
   }
+  void discoverMockDevices(Function(String id, String ip, String model, String firmware, String lastActive) callback) {
+  // Example mock discovery
+  callback("D123", "192.168.1.100", "ET-Lite", "v1.2.0", "1 min ago");
+}
+
 }
 

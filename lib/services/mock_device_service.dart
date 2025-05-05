@@ -21,6 +21,7 @@ class MockDeviceService {
     deviceId = 'mock-device-${_deviceCounter}';
     deviceType = 'mock-type'; // You can change this if needed
     ipAddress = '192.168.1.${100 + _deviceCounter}';
+    
   }
 
   Future<Map<String, dynamic>> connect() async {
