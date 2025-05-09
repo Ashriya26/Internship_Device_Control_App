@@ -33,36 +33,8 @@ This Flutter app allows users to configure, control, and monitor smart devices (
 
 ## 🏗️ Project Structure
 
-lib/
-│
-├── main.dart
-│
-├── pages/
-│   ├── device_control_page.dart
-│   ├── home_page.dart
-│   ├── login_page.dart
-│   ├── settings_page.dart
-│   └── start_page.dart
-│
-├── providers/
-│   └── network_provider.dart
-│
-├── services/
-│   ├── database_service.dart
-│   ├── mock_device_service.dart
-│   ├── mqtt_service.dart
-│   ├── udp_service.dart
-│   └── websocket_service.dart
-│
-├── shared_preferences/
-│   └── shared_preferences.dart
-│
-└── widgets/
-    ├── delete_device.dart
-    ├── device_card.dart
-    ├── edit_device.dart
-    └── options_popup.dart
 
+![Project Flow](assets/images/flow.png)
 
 
 
