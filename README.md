@@ -1,21 +1,88 @@
-HEAD
-# device_control_app
+# 🧠 Smart Device Control App – Internship Project @ Emtantra
 
-A new Flutter project.
+This Flutter app allows users to configure, control, and monitor smart devices (like ESP32/ESP8266) over both **local Wi-Fi (WebSocket & UDP)** and **cloud (future MQTT)**. Designed for flexibility, it supports both **real device communication** and **mock simulations** for development and testing.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 Features
 
-A few resources to get you started if this is your first Flutter project:
+- ✅ **User Authentication**
+  - Admin credentials stored in SQLite
+  - SharedPreferences used for session management
+  - Login & logout functionality
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- ⚙️ **Add New Device (Mock & Real ESP Flow)**
+  - Mock ESP32 service to simulate full device onboarding
+  - Device name, SSID, and password input with validation
+  - Auto-generated device names (e.g., *Device 1*, *Device 2*, etc.)
+  - Simulated WebSocket config exchange + UDP discovery
+  - SQLite used to store and retrieve devices
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-=======
-# Internship_Device_Control_App
-This app controls the devices connected to the PLC.
->>>>>>> fc5238a2942e7ee2f9144c04bdef63c2b4eb970e
+- 📶 **Real-Time Device Control**
+  - Toggle device state from Control Page
+  - Real-time updates on Home Page using state management
+  - Renaming devices syncs across screens
+
+- 📱 **Responsive UI**
+  - Home Page with device cards
+  - Device Control Page styled to match Home Page
+  - Dialogs with form validation, network prompts, and loading indicators
+  - Smooth transitions and error handling
+
+---
+
+## 🏗️ Project Structure
+
+lib/
+├── main.dart
+├── pages/
+│   ├── device_control_page.dart
+│   ├── home_page.dart
+│   ├── login_page.dart
+│   ├── settings_page.dart
+│   └── start_page.dart
+├── providers/
+│   └── network_provider.dart
+├── services/
+│   ├── database_service.dart
+│   ├── mock_device_service.dart
+│   ├── mqtt_service.dart
+│   ├── udp_service.dart
+│   └── websocket_service.dart
+├── shared_preferences/
+│   └── shared_preferences.dart
+├── widgets/
+│   ├── delete_device.dart
+│   ├── device_card.dart
+│   ├── edit_device.dart
+│   └── options_popup.dart
+
+
+
+---
+
+## 🧪 Testing & Mock Setup
+
+This project supports **full mock simulation** for device testing without hardware.
+
+1. Start app and login with admin credentials.
+2. Click "Add Device" → guided dialog prompts for:
+   - Connect to mock ESP Wi-Fi (`ET-XXXX`)
+   - Enter SSID, password, and name
+3. Config sent to `mock_device_service.dart` via WebSocket
+4. Device appears on Home Page via UDP simulation
+5. Toggle and rename tested in real-time with shared state sync
+
+---
+
+## 🧠 Built With
+
+- Flutter
+- SQLite (via `sqflite`)
+- WebSocket (`web_socket_channel`)
+- UDP (`udp`)
+- MQTT (future integration via `mqtt_client`)
+- SharedPreferences
+
+---
+
